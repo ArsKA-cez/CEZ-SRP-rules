@@ -18,59 +18,59 @@
             background-color: rgba(0, 0, 0, 0.75);
             padding: 40px 30px;
             border-radius: 12px;
-            max-width: 900px;
+            max-width: 960px;
             margin: 40px auto;
             box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            text-align: center;
         }
         h1 {
             font-size: 2.8em;
-            text-align: center;
             color: #DCDCDC;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         h2 {
             font-size: 1.8em;
             color: #a9c1d9;
-            margin: 40px 0 20px;
-            text-align: center;
+            margin: 30px 0 40px;
         }
         .spisok {
             list-style: none;
             padding: 0;
-            margin: 30px 0;
+            margin: 0 auto;
+            max-width: 500px;          /* ограничиваем ширину, чтобы кнопки были по центру */
         }
         .spisok li {
             margin: 20px 0;
-            font-size: 1.2em;
         }
         .spisok a {
+            display: block;
             color: #a9c1d9;
             text-decoration: none;
-            padding: 12px 20px;
-            background: rgba(42, 47, 58, 0.6);
-            border: 1px solid #a9c1d9;
-            border-radius: 8px;
-            display: inline-block;
-            transition: all 0.25s;
-            min-width: 300px;
-            text-align: center;
+            padding: 18px 30px;
+            background: rgba(42, 47, 58, 0.7);
+            border: 2px solid #a9c1d9;
+            border-radius: 10px;
+            font-size: 1.3em;
+            font-weight: bold;
+            transition: all 0.3s;
         }
         .spisok a:hover {
-            background: rgba(58, 63, 74, 0.8);
+            background: rgba(58, 63, 74, 0.9);
             color: white;
-            transform: translateY(-3px);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(169, 193, 217, 0.3);
         }
         .back-button {
             display: inline-block;
             background-color: #2a2f3a;
             color: #a9c1d9;
-            padding: 12px 28px;
-            margin: 20px 0;
+            padding: 14px 32px;
+            margin: 25px 0;
             border: 1px solid #a9c1d9;
             border-radius: 8px;
             text-decoration: none;
             font-weight: bold;
-            font-size: 1.1em;
+            font-size: 1.15em;
             transition: all 0.25s;
         }
         .back-button:hover {
@@ -79,12 +79,10 @@
             transform: translateY(-3px);
         }
         .back-top {
-            text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 35px;
         }
         .back-bottom {
-            text-align: center;
-            margin-top: 50px;
+            margin-top: 60px;
         }
     </style>
 </head>
@@ -98,41 +96,25 @@
 
         <h1>Справочники</h1>
 
-        <h2>Основные таблицы и справочники проекта</h2>
+        <h2>Основные таблицы проекта</h2>
 
-        <p style="text-align: center; margin-bottom: 40px;">
-            Здесь собраны все необходимые ссылки на таблицы с оружием, предметами, ценами и другой важной информацией.
+        <p style="margin-bottom: 45px; font-size: 1.15em;">
+            Все необходимые справочники и таблицы в одном месте
         </p>
 
         <ul class="spisok">
             <li>
-                <a href="https://docs.google.com/spreadsheets/d/ВАШ_ID_СПРАВОЧНИК_ОРУЖИЯ/edit" target="_blank">
-                    Справочник оружия и брони
+                <a href="https://docs.google.com/spreadsheets/d/1Mq2jw4SyupURJBj4vGh4l8ghDuweLQrAkC2nBfwK0NE/edit?usp=drivesdk" target="_blank">
+                    Справочник оружия
                 </a>
             </li>
             <li>
-                <a href="https://docs.google.com/spreadsheets/d/ВАШ_ID_СПРАВОЧНИК_ПРЕДМЕТОВ/edit" target="_blank">
-                    Справочник предметов, цен и способов получения
+                <a href="https://docs.google.com/spreadsheets/d/1KieK85r0QcSeqzJscDsZLrn-SSoFgK0K1ZpKiwwIJQs/edit?usp=drivesdk" target="_blank">
+                    Справочник предметов
                 </a>
             </li>
-            <li>
-                <a href="https://docs.google.com/spreadsheets/d/ВАШ_ID_ТАБЛИЦА_ТРАНСПОРТА/edit" target="_blank">
-                    Транспорт и ключи
-                </a>
-            </li>
-            <!-- Добавляй сюда новые пункты по мере необходимости -->
-            <!-- Пример:
-            <li>
-                <a href="https://docs.google.com/..." target="_blank">
-                    Список квестов и наград
-                </a>
-            </li>
-            -->
+            <!-- Если появятся другие справочники — просто добавляй новые <li> -->
         </ul>
-
-        <p style="text-align: center; font-size: 1.1em; margin-top: 30px;">
-            Все таблицы открываются в новой вкладке. Убедись, что у тебя есть доступ (обычно — «по ссылке»).
-        </p>
 
         <!-- Кнопка внизу -->
         <div class="back-bottom">
