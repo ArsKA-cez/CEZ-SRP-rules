@@ -27,58 +27,155 @@
             box-shadow: 0 0 30px rgba(0,0,0,0.8);
         }
         h1 {
-            font-size: 3.2em;
-            margin: 0 0 20px;
+            font-size: 3.5em;
+            margin: 0 0 10px;
             color: #DCDCDC;
+            text-shadow: 0 2px 10px #000;
         }
+        .subtitle {
+            font-size: 1.4em;
+            margin: 0 0 35px;
+            opacity: 0.9;
+        }
+
+        /* Слайдер 1024×768 */
+        .slider-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto 50px auto;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #a9c1d9;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+        }
+        .slider {
+            position: relative;
+            width: 100%;
+            padding-top: 75%;               /* 768 / 1024 = 75% */
+        }
+        .slides {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            transition: transform 1s ease-in-out;
+        }
+        .slide {
+            min-width: 100%;
+            height: 100%;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            background: #111;
+            display: block;
+        }
+        .caption {
+            position: absolute;
+            bottom: 15px;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            padding: 10px;
+            font-size: 1.1em;
+            text-align: center;
+            opacity: 0.9;
+            z-index: 2;
+        }
+
         .buttons {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 25px;
-            margin: 50px 0;
+            gap: 30px;
+            margin: 30px 0 40px;
         }
         .big-btn {
             background: linear-gradient(135deg, #2a2f3a, #1a1d23);
             color: #a9c1d9;
-            padding: 25px 40px;
-            font-size: 1.5em;
+            padding: 28px 50px;
+            font-size: 1.6em;
             font-weight: bold;
             text-decoration: none;
             border: 2px solid #a9c1d9;
             border-radius: 12px;
             transition: all 0.3s;
-            min-width: 220px;
+            min-width: 240px;
         }
         .big-btn:hover {
             transform: translateY(-8px);
             background: linear-gradient(135deg, #3a3f4a, #2a2d3b);
-            box-shadow: 0 10px 25px rgba(169,193,217,0.25);
+            box-shadow: 0 12px 30px rgba(169,193,217,0.3);
             color: white;
         }
         footer {
-            margin-top: 60px;
-            font-size: 0.9em;
-            opacity: 0.7;
+            margin-top: 50px;
+            font-size: 0.95em;
+            opacity: 0.8;
         }
     </style>
 </head>
 <body>
     <div class="content">
-        <h1>CEZ SRP<br>Simple Sandbox 2</h1>
-        
+
+        <h1>CEZ SRP</h1>
+        <div class="subtitle">Simple Sandbox 2</div>
+
+        <!-- Слайдер здесь — сразу под заголовком, над кнопками -->
+        <div class="slider-wrapper">
+            <div class="slider">
+                <div class="slides" id="slides">
+                    <div class="slide">
+                        <img src="images/screenshots/скрин_1.png" alt="Атмосферная карта Зоны">
+                        <div class="caption">Исследуй открытый мир</div>
+                    </div>
+                    <div class="slide">
+                        <img src="images/screenshots/скрин_2.png" alt="Персонажи и экипировка">
+                        <div class="caption">Выполняй задания и собирай хабар</div>
+                    </div>
+                    <div class="slide">
+                        <img src="images/screenshots/скрин_3.png" alt="РП-отыгрыш">
+                        <div class="caption">Стань легендой зоны</div>
+                    </div>
+                    <!-- Добавь свои скриншоты сюда -->
+                </div>
+            </div>
+        </div>
+
         <div class="buttons">
             <a href="about.html" class="big-btn">О нас</a>
             <a href="rules.html" class="big-btn">Правила и механики</a>
             <a href="handbooks.html" class="big-btn">Справочники</a>
-            <a href="https://docs.google.com/spreadsheets/d/1pZgJ9Ceuf18dPyXZ9DKjDVLHZBfY8LQsdu_XZb1QfEw/edit?usp=drivesdk" 
+            <a href="https://docs.google.com/spreadsheets/d/ВАШ_ID_ТАБЛИЦЫ_ИГРОКОВ/edit" 
                target="_blank" 
                class="big-btn">Таблица игроков</a>
         </div>
 
         <footer>
-            © CEZ SRP 2024 | Связь с администрацией: t.me/CEZSRP
+            © CEZ SRP 2024–2026 | Связь с администрацией: t.me/CEZSRP
         </footer>
+
     </div>
+
+    <script>
+        const slides = document.getElementById('slides');
+        const slideCount = slides.children.length;
+        let currentIndex = 0;
+
+        function nextSlide() {
+            currentIndex = (currentIndex + 1) % slideCount;
+            slides.style.transform = `translateX(-${currentIndex * 100}%)`;
+        }
+
+        setInterval(nextSlide, 5000); // каждые 5 секунд
+    </script>
 </body>
 </html>
