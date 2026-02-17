@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация в CEZ SRP</title>
+    <style>
+        body {
+            background: #17161c url('images/fon.jpg') no-repeat center fixed;
+            background-size: cover;
+            font-family: 'Arial', sans-serif;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .content {
+            background-color: rgba(0, 0, 0, 0.75);
+            padding: 50px 30px;
+            border-radius: 12px;
+            max-width: 960px;
+            margin: 40px auto;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            text-align: center;
+        }
+        h1 {
+            font-size: 3.2em;
+            color: #DCDCDC;
+            margin: 0 0 10px;
+            text-shadow: 0 2px 10px #000;
+        }
+        .subtitle {
+            font-size: 1.4em;
+            margin: 0 0 35px;
+            opacity: 0.9;
+        }
+
+        /* Слайдер 1024×768 */
+        .slider-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 30px auto 50px auto;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #a9c1d9;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+        }
+        .slider {
+            position: relative;
+            width: 100%;
+            padding-top: 75%;               /* 768 / 1024 = 75% */
+        }
+        .slides {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            transition: transform 1s ease-in-out;
+        }
+        .slide {
+            min-width: 100%;
+            height: 100%;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+            background: #111;
+            display: block;
+        }
+        .caption {
+            position: absolute;
+            bottom: 15px;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            padding: 10px;
+            font-size: 1.1em;
+            text-align: center;
+            opacity: 0.9;
+            z-index: 2;
+        }
+
+        .section-text {
+            font-size: 1.15em;
+            margin: 30px 0;
+            text-align: left;
+        }
+        .section-text p {
+            margin: 15px 0;
+        }
+        .highlight {
+            color: #a9c1d9;
+            font-weight: bold;
+        }
+        footer {
+            margin-top: 60px;
+            font-size: 0.95em;
+            opacity: 0.8;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+
+        <h1>CEZ SRP</h1>
+        <div class="subtitle">Simple Sandbox 2</div>
+
+        <!-- Слайдер -->
+        <div class="slider-wrapper">
+            <div class="slider">
+                <div class="slides" id="slides">
+                    <div class="slide">
+                        <img src="images/screenshots/скрин_1.png" alt="Атмосферная карта Зоны">
+                        <div class="caption">Исследуй опасную Зону</div>
+                    </div>
+                    <div class="slide">
+                        <img src="images/screenshots/скрин_2.png" alt="Персонажи и экипировка">
+                        <div class="caption">Выбери свою группировку</div>
+                    </div>
+                    <div class="slide">
+                        <img src="images/screenshots/скрин_3.png" alt="РП-отыгрыш">
+                        <div class="caption">Живи по законам Зоны</div>
+                    </div>
+                    <!-- Добавь свои скриншоты сюда -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Текст из "О нас" -->
+        <div class="section-text">
+            <h2>CEZ SRP: Проект, вдохновлённый серией игр «Сталкер»</h2>
+            <p>CEZ SRP — это РП проект, созданный на основе популярной игры Simple Sandbox 2 и вдохновлённый серией «Сталкер». Он приглашает игроков погрузиться в уникальный мир, наполненный увлекательными историями и детально проработанным сюжетом.</p>
+
+            <h2>Описание</h2>
+            <p>Действие разворачивается в альтернативной вселенной, созданной по мотивам трилогии «Сталкер». В этом мире происходят совершенно иные события, живут иные люди, и разворачиваются свои истории. Тайны остаются нераскрытыми, ЧАЭС остаётся неприступной, а происхождение Зоны по-прежнему остаётся загадкой.</p>
+
+            <p style="font-weight: bold; font-size: 1.3em; text-align: center; margin: 40px 0;">
+                Дата создания проекта: 8 января 2024 года
+            </p>
+
+            <p style="text-align: center; font-style: italic; margin-top: 40px; opacity: 0.9;">
+                Зона ждёт. Ты готов?
+            </p>
+        </div>
+
+<p style="text-align: center; font-style: italic; margin-top: 40px; opacity: 0.9;">
+    Зона зовёт. Ты готов войти?
+</p>
+
+<!-- Кнопка "Регистрация" -->
+<div style="text-align: center; margin: 30px 0;">
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSc_PMGTAH2UtVTfTjke84zmBKQQEptqF-fpgysC9OFFQasGgA/viewform?usp=sharing" 
+       target="_blank" 
+       style="
+           display: inline-block;
+           background: linear-gradient(135deg, #2a2f3a, #1a1d23);
+           color: #a9c1d9;
+           padding: 18px 50px;
+           font-size: 1.5em;
+           font-weight: bold;
+           text-decoration: none;
+           border: 2px solid #a9c1d9;
+           border-radius: 12px;
+           transition: all 0.3s;
+           box-shadow: 0 4px 15px rgba(169,193,217,0.2);
+       "
+       onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 25px rgba(169,193,217,0.4)'; this.style.color='white';"
+       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(169,193,217,0.2)'; this.style.color='#a9c1d9';">
+        Регистрация
+    </a>
+</div>
+
+        <!-- Копирайт в самом низу -->
+        <footer>
+            © CEZ SRP 2024–2026 | Связь с администрацией: t.me/CEZSRP
+        </footer>
+
+    </div>
+
+    <script>
+        const slides = document.getElementById('slides');
+        const slideCount = slides.children.length;
+        let currentIndex = 0;
+
+        function nextSlide() {
+            currentIndex = (currentIndex + 1) % slideCount;
+            slides.style.transform = `translateX(-${currentIndex * 100}%)`;
+        }
+
+        setInterval(nextSlide, 5000); // каждые 5 секунд
+    </script>
+</body>
+</html>
