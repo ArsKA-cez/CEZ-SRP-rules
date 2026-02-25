@@ -111,7 +111,7 @@
         .artifact-rare { color: #00ffea; text-shadow: 0 0 10px #00ffea; }
         .artifact-legend { color: #ff00aa; text-shadow: 0 0 15px #ff00aa; }
 
-        /* Уведомление поверх сайта */
+        /* Уведомление */
         #artifact-notification {
             position: fixed;
             top: 0; left: 0;
@@ -191,7 +191,7 @@
         <div id="result"></div>
     </div>
 
-    <!-- Уведомление об артефакте -->
+    <!-- Уведомление -->
     <div id="artifact-notification">
         <div class="notification-box">
             <div class="notification-title">Артефакт обнаружен!</div>
@@ -219,43 +219,36 @@
 
         let artifacts = [];
 
-        // Загрузка данных из твоей таблицы
         async function loadArtifacts() {
             try {
-                // Твоя точная ссылка → ID и gid
-                const spreadsheetId = '2PACX-1vQH7LcXjMumSy4IsPJ-wWnxMF91UeyF193u7deot4q2bJC_Koa03Sh5OIr71JJ2UNk7rKrrc5LxcW7M';
-                const gid = '0';
-                const url = `https://docs.google.com/spreadsheets/d/e/\( {spreadsheetId}/pubhtml?gid= \){gid}&single=true&tqx=out:json`;
+                const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQH7LcXjMumSy4IsPJ-wWnxMF91UeyF193u7deot4q2bJC_Koa03Sh5OIr71JJ2UNk7rKrrc5LxcW7M/pub?output=csv&gid=0';
 
                 const response = await fetch(url);
-                const text = await response.text();
+                if (!response.ok) throw new Error(`HTTP ошибка: ${response.status}`);
 
-                // Убираем префикс google.visualization.Query.setResponse(
-                const jsonStart = text.indexOf('{');
-                const jsonEnd = text.lastIndexOf('}') + 1;
-                const jsonString = text.substring(jsonStart, jsonEnd);
-                const data = JSON.parse(jsonString);
+                const csvText = await response.text();
 
-                const rows = data.table.rows;
-                const headers = data.table.cols.map(col => col.label.trim());
+                const lines = csvText.trim().split('\n');
+                if (lines.length < 2) throw new Error('Таблица пустая');
 
-                artifacts = rows.slice(1).map(row => {
+                const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+
+                artifacts = lines.slice(1).map(line => {
+                    const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
                     const obj = {};
-                    row.c.forEach((cell, i) => {
-                        const header = headers[i];
-                        obj[header] = cell?.v ?? (header === 'Название' || header === 'Аномалия' ? '' : 0);
+                    headers.forEach((header, i) => {
+                        obj[header] = values[i] || (header === 'Название' || header === 'Аномалия' ? '' : 0);
                     });
                     return obj;
                 });
 
                 resultDiv.textContent = `Загружено ${artifacts.length} артефактов из таблицы`;
             } catch (err) {
-                console.error('Ошибка загрузки таблицы:', err);
+                console.error('Ошибка загрузки CSV:', err);
                 resultDiv.textContent = 'Не удалось загрузить базу артефактов. Проверь консоль (F12)';
             }
         }
 
-        // Загружаем сразу при открытии страницы
         loadArtifacts();
 
         detectorType.addEventListener('change', () => {
@@ -276,7 +269,7 @@
             scanBtn.textContent = "Сканирую...";
             resultDiv.textContent = "Детектор работает...";
 
-            const delay = 5000; // 5 секунд для теста
+            const delay = 5000;
 
             setTimeout(() => {
                 const selectedDetector = detectorType.value;
@@ -316,8 +309,10 @@
 
                     resultDiv.innerHTML = `Обнаружен артефакт: <span class="\( {colorClass}"> \){artifact.Название}</span>`;
 
+                    // ИСПРАВЛЕННОЕ УВЕДОМЛЕНИЕ — имя артефакта подставляется правильно
+                    const color = colorClass === 'artifact-rare' ? '#00ffea' : colorClass === 'artifact-legend' ? '#ff00aa' : '#a9c1d9';
                     document.getElementById('found-artifact').innerHTML = 
-                        `Обнаружен артефакт: <span style="color:\( {colorClass === 'artifact-rare' ? '#00ffea' : colorClass === 'artifact-legend' ? '#ff00aa' : '#a9c1d9'}; font-weight:bold;"> \){artifact.Название}</span>`;
+                        `Обнаружен артефакт: <span style="color:\( {color}; font-weight:bold;"> \){artifact.Название}</span>`;
                     document.getElementById('artifact-notification').style.display = 'flex';
                 }
 
