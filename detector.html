@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEZ SRP — Детектор артефактов</title>
+    <style>
+        body {
+            background: #17161c url('images/fon.jpg') no-repeat center fixed;
+            background-size: cover;
+            font-family: 'Arial', sans-serif;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(0, 0, 0, 0.75);
+            padding: 40px;
+            border-radius: 12px;
+            max-width: 700px;
+            margin: 40px auto;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            text-align: center;
+        }
+        h1 {
+            font-size: 2.6em;
+            color: #DCDCDC;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-size: 1.3em;
+            opacity: 0.9;
+            margin-bottom: 35px;
+        }
+        label, select, input {
+            font-size: 1.2em;
+            margin: 15px 0;
+            display: block;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        select, input[type="text"] {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #a9c1d9;
+            background: #1a1d23;
+            color: #e0e0e0;
+        }
+        button {
+            margin-top: 30px;
+            padding: 16px 50px;
+            font-size: 1.4em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #2a2f3a, #1a1d23);
+            color: #a9c1d9;
+            border: 2px solid #a9c1d9;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:hover {
+            transform: translateY(-4px);
+            background: linear-gradient(135deg, #3a3f4a, #2a2d3b);
+            box-shadow: 0 8px 20px rgba(169,193,217,0.3);
+            color: white;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        #detector-area {
+            margin: 50px auto 30px;
+            width: 320px;
+            height: 380px;
+            position: relative;
+            border: 2px solid #a9c1d9;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #111;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+        }
+        #detector-bg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        #player-number {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2.4em;
+            font-weight: bold;
+            color: #ffcc00;
+            text-shadow: 0 0 12px #ffcc00;
+            z-index: 3;
+        }
+        #result {
+            margin-top: 30px;
+            font-size: 1.6em;
+            font-weight: bold;
+            min-height: 60px;
+            color: #a9c1d9;
+        }
+        .artifact-rare { color: #00ffea; text-shadow: 0 0 10px #00ffea; }
+        .artifact-legend { color: #ff00aa; text-shadow: 0 0 15px #ff00aa; }
+
+        /* Уведомление поверх сайта */
+        #artifact-notification {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .notification-box {
+            background: rgba(26,29,35,0.95);
+            padding: 50px 60px;
+            border-radius: 16px;
+            border: 3px solid #a9c1d9;
+            box-shadow: 0 0 40px rgba(169,193,217,0.5);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+        }
+        .notification-title {
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            color: #ffcc00;
+        }
+        .notification-text {
+            font-size: 1.6em;
+            margin: 20px 0 40px;
+        }
+        .notification-btn {
+            padding: 16px 40px;
+            font-size: 1.3em;
+            margin: 0 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+        .btn-take { background: #00cc66; color: white; }
+        .btn-take:hover { background: #00b359; transform: scale(1.08); }
+        .btn-drop { background: #cc0000; color: white; }
+        .btn-drop:hover { background: #b30000; transform: scale(1.08); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>CEZ SRP</h1>
+        <div class="subtitle">Детектор артефактов</div>
+
+        <label for="detector-type">Тип детектора:</label>
+        <select id="detector-type">
+            <option value="Отклик">Отклик</option>
+            <option value="Медведь">Медведь</option>
+            <option value="Велес">Велес</option>
+            <option value="Сварог">Сварог</option>
+        </select>
+
+        <label for="anomaly-type">Тип аномалии:</label>
+        <select id="anomaly-type">
+            <option value="none">Без аномалии</option>
+            <option value="Гравитационная">Гравитационная</option>
+            <option value="Электрическая">Электрическая</option>
+            <option value="Термическая">Термическая</option>
+        </select>
+
+        <label for="player-id">Номер игрока:</label>
+        <input type="text" id="player-id" placeholder="Например: 1428" maxlength="10">
+
+        <button id="scan-btn">Сканировать</button>
+
+        <div id="detector-area">
+            <img id="detector-bg" src="" alt="Детектор">
+            <div id="player-number"></div>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <!-- Уведомление об артефакте -->
+    <div id="artifact-notification">
+        <div class="notification-box">
+            <div class="notification-title">Артефакт обнаружен!</div>
+            <div class="notification-text" id="found-artifact">...</div>
+            <button class="notification-btn btn-take" onclick="closeNotification()">Забрать</button>
+            <button class="notification-btn btn-drop" onclick="closeNotification()">Выбросить</button>
+        </div>
+    </div>
+
+    <script>
+        const detectorType = document.getElementById('detector-type');
+        const anomalyType = document.getElementById('anomaly-type');
+        const playerIdInput = document.getElementById('player-id');
+        const scanBtn = document.getElementById('scan-btn');
+        const detectorImg = document.getElementById('detector-bg');
+        const playerNumberDisplay = document.getElementById('player-number');
+        const resultDiv = document.getElementById('result');
+
+        const detectorImages = {
+            "Отклик": 'images/detectors/otklik.png',
+            "Медведь": 'images/detectors/medved.png',
+            "Велес":  'images/detectors/veles.png',
+            "Сварог": 'images/detectors/svarog.png'
+        };
+
+        let artifacts = [];
+
+        // Загрузка данных из твоей таблицы
+        async function loadArtifacts() {
+            try {
+                // Твоя точная ссылка → ID и gid
+                const spreadsheetId = '2PACX-1vQH7LcXjMumSy4IsPJ-wWnxMF91UeyF193u7deot4q2bJC_Koa03Sh5OIr71JJ2UNk7rKrrc5LxcW7M';
+                const gid = '0';
+                const url = `https://docs.google.com/spreadsheets/d/e/\( {spreadsheetId}/pubhtml?gid= \){gid}&single=true&tqx=out:json`;
+
+                const response = await fetch(url);
+                const text = await response.text();
+
+                // Убираем префикс google.visualization.Query.setResponse(
+                const jsonStart = text.indexOf('{');
+                const jsonEnd = text.lastIndexOf('}') + 1;
+                const jsonString = text.substring(jsonStart, jsonEnd);
+                const data = JSON.parse(jsonString);
+
+                const rows = data.table.rows;
+                const headers = data.table.cols.map(col => col.label.trim());
+
+                artifacts = rows.slice(1).map(row => {
+                    const obj = {};
+                    row.c.forEach((cell, i) => {
+                        const header = headers[i];
+                        obj[header] = cell?.v ?? (header === 'Название' || header === 'Аномалия' ? '' : 0);
+                    });
+                    return obj;
+                });
+
+                resultDiv.textContent = `Загружено ${artifacts.length} артефактов из таблицы`;
+            } catch (err) {
+                console.error('Ошибка загрузки таблицы:', err);
+                resultDiv.textContent = 'Не удалось загрузить базу артефактов. Проверь консоль (F12)';
+            }
+        }
+
+        // Загружаем сразу при открытии страницы
+        loadArtifacts();
+
+        detectorType.addEventListener('change', () => {
+            const selected = detectorType.value;
+            detectorImg.src = detectorImages[selected] || 'images/detectors/default.png';
+        });
+
+        scanBtn.addEventListener('click', () => {
+            const playerId = playerIdInput.value.trim();
+            if (!playerId) {
+                alert("Введи номер игрока!");
+                return;
+            }
+
+            playerNumberDisplay.textContent = playerId;
+
+            scanBtn.disabled = true;
+            scanBtn.textContent = "Сканирую...";
+            resultDiv.textContent = "Детектор работает...";
+
+            const delay = 5000; // 5 секунд для теста
+
+            setTimeout(() => {
+                const selectedDetector = detectorType.value;
+
+                if (artifacts.length === 0) {
+                    resultDiv.textContent = "База артефактов не загружена!";
+                    scanBtn.disabled = false;
+                    scanBtn.textContent = "Сканировать";
+                    return;
+                }
+
+                const candidates = [];
+
+                artifacts.forEach(art => {
+                    const prob = parseInt(art[selectedDetector] || 0, 10);
+                    if (prob > 0) {
+                        for (let i = 0; i < prob; i++) {
+                            candidates.push(art);
+                        }
+                    }
+                });
+
+                let artifact = { Название: "Ничего не найдено" };
+
+                if (candidates.length > 0) {
+                    artifact = candidates[Math.floor(Math.random() * candidates.length)];
+                }
+
+                const lowerName = artifact.Название.toLowerCase();
+                if (lowerName === "nothing" || lowerName === "ничего" || lowerName === "") {
+                    resultDiv.textContent = "Ничего не найдено";
+                } else {
+                    let colorClass = '';
+                    const rarity = artifact.rarity?.toLowerCase() || 'common';
+                    if (rarity === 'rare') colorClass = 'artifact-rare';
+                    if (rarity === 'legend') colorClass = 'artifact-legend';
+
+                    resultDiv.innerHTML = `Обнаружен артефакт: <span class="\( {colorClass}"> \){artifact.Название}</span>`;
+
+                    document.getElementById('found-artifact').innerHTML = 
+                        `Обнаружен артефакт: <span style="color:\( {colorClass === 'artifact-rare' ? '#00ffea' : colorClass === 'artifact-legend' ? '#ff00aa' : '#a9c1d9'}; font-weight:bold;"> \){artifact.Название}</span>`;
+                    document.getElementById('artifact-notification').style.display = 'flex';
+                }
+
+                scanBtn.disabled = false;
+                scanBtn.textContent = "Сканировать";
+            }, delay);
+        });
+
+        function closeNotification() {
+            document.getElementById('artifact-notification').style.display = 'none';
+        }
+
+        detectorImg.src = detectorImages[detectorType.value];
+    </script>
+</body>
+</html>
