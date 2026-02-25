@@ -178,8 +178,8 @@
         <div class="notification-box">
             <div class="notification-title">Артефакт обнаружен!</div>
             <div class="notification-text" id="found-artifact"></div>
-            <button class="scan-btn" onclick="closeNotification()">Забрать</button>
-            <button class="scan-btn" onclick="closeNotification()">Выбросить</button>
+            <button class="scan-btn" onclick="handleArtifactAction('забрал')">Забрать</button>
+            <button class="scan-btn" onclick="handleArtifactAction('выбросил')">Выбросить</button>
         </div>
     </div>
 
@@ -207,6 +207,35 @@
         };
 
         let artifacts = [];
+
+        // Функция отправки в Telegram
+        function notifyTelegram(action, details = '') {
+            const token = '7601048796:AAG6n3IO8E4K0CgqAl-SETz70ERsSci9DL4';
+            const chatId = '-1003590431257';
+            
+            const playerId = playerIdInput.value.trim() || 'неизвестный';
+            const detector = detectorType.value;
+            const anomaly = anomalyType.value === 'none' ? 'без аномалии' : anomalyType.value;
+            
+            let text = `🎮 Игрок ${playerId}\n`;
+            text += `📡 Детектор: ${detector}\n`;
+            text += `🌪 Аномалия: ${anomaly}\n`;
+            text += `🔄 Действие: ${action}\n`;
+            
+            if (details) {
+                text += `📝 ${details}`;
+            }
+            
+            fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}`)
+                .catch(error => addLog('Ошибка отправки в Telegram: ' + error));
+        }
+
+        // Обработка действий с артефактом
+        function handleArtifactAction(action) {
+            const artifactName = document.getElementById('found-artifact').textContent;
+            notifyTelegram(action, `Артефакт: ${artifactName}`);
+            closeNotification();
+        }
 
         async function loadArtifacts() {
             addLog("Начало загрузки таблицы...");
@@ -267,6 +296,9 @@
 
             playerNumberDisplay.textContent = playerId;
             addLog("Сканирование начато. Игрок: " + playerId);
+            
+            // Отправляем уведомление о начале сканирования
+            notifyTelegram('начал сканирование');
 
             scanBtn.disabled = true;
             scanBtn.textContent = "Сканирую...";
@@ -287,47 +319,40 @@
                     return;
                 }
 
-addLog("Начало подсчёта кандидатов (взвешенный выбор)...");
+                addLog("Начало подсчёта кандидатов (взвешенный выбор)...");
 
-let totalWeight = 0;
-const weightedList = [];
+                let totalWeight = 0;
+                const weightedList = [];
 
-artifacts.forEach(art => {
-    let prob = parseInt(art[selectedDetector] || 0, 10);
+                artifacts.forEach(art => {
+                    let prob = parseInt(art[selectedDetector] || 0, 10);
 
-    // Гарантированный шанс на "ничего" — минимум 20% (можно изменить)
-    if (art['Артефакт \\ Детектор'] === 'nothing') {
-        prob = Math.max(prob, 80);
-    }
+                    // Гарантированный шанс на "ничего" — минимум 20% (можно изменить)
+                    if (art['Артефакт \\ Детектор'] === 'nothing') {
+                        prob = Math.max(prob, 80);
+                    }
 
-    // Если хочешь бонус от аномалии — раскомментируй
-    /*
-    if (selectedAnomaly !== 'none' && art['Аномалия'] === selectedAnomaly) {
-        prob = Math.round(prob * 1.8); // ×1.8 — можно 2 или 1.5
-    }
-    */
+                    if (prob > 0) {
+                        totalWeight += prob;
+                        weightedList.push({ art, weight: prob });
+                        addLog(`Добавлен: ${art['Артефакт \\ Детектор']} (вес ${prob})`);
+                    }
+                });
 
-    if (prob > 0) {
-        totalWeight += prob;
-        weightedList.push({ art, weight: prob });
-        addLog(`Добавлен: ${art['Артефакт \\ Детектор']} (вес ${prob})`);
-    }
-});
+                addLog("Общий вес кандидатов: " + totalWeight);
 
-addLog("Общий вес кандидатов: " + totalWeight);
+                let artifact = { 'Артефакт \\ Детектор': "Ничего не найдено" };
 
-let artifact = { 'Артефакт \\ Детектор': "Ничего не найдено" };
-
-if (totalWeight > 0) {
-    let random = Math.random() * totalWeight;
-    for (const item of weightedList) {
-        random -= item.weight;
-        if (random <= 0) {
-            artifact = item.art;
-            break;
-        }
-    }
-}
+                if (totalWeight > 0) {
+                    let random = Math.random() * totalWeight;
+                    for (const item of weightedList) {
+                        random -= item.weight;
+                        if (random <= 0) {
+                            artifact = item.art;
+                            break;
+                        }
+                    }
+                }
 
                 const artName = artifact['Артефакт \\ Детектор'] || "без имени";
                 addLog("Выбран: " + artName);
@@ -336,20 +361,23 @@ if (totalWeight > 0) {
                 if (lowerName === "nothing" || lowerName === "ничего" || lowerName === "") {
                     resultDiv.textContent = "Ничего не найдено";
                     addLog("Результат: ничего");
+                    // Отправляем уведомление о пустом результате
+                    notifyTelegram('завершил сканирование', 'Результат: ничего не найдено');
                 } else {
                     let colorClass = '';
                     const rarity = artifact.rarity?.toLowerCase() || 'common';
                     if (rarity === 'rare') colorClass = 'artifact-rare';
                     if (rarity === 'legend') colorClass = 'artifact-legend';
 
-                    resultDiv.innerHTML = "Обнаружен артефакт: " + artName;;
+                    resultDiv.innerHTML = "Обнаружен артефакт: " + artName;
 
                     const color = colorClass === 'artifact-rare' ? '#00ffea' : colorClass === 'artifact-legend' ? '#ff00aa' : '#a9c1d9';
-                    document.getElementById('found-artifact').innerHTML = 
-                        document.getElementById('found-artifact').innerHTML = "Обнаружен артефакт: " + artName;
+                    document.getElementById('found-artifact').innerHTML = artName;
                     document.getElementById('artifact-notification').style.display = 'flex';
 
                     addLog("Результат: найден " + artName);
+                    // Отправляем уведомление о найденном артефакте
+                    notifyTelegram('обнаружил артефакт', `Найден: ${artName} (${rarity})`);
                 }
 
                 scanBtn.disabled = false;
