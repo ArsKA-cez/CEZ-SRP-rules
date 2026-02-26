@@ -32,61 +32,59 @@
             width: 100%;
             max-width: 400px;
         }
-        /* Стили для полей ввода и кнопок - делаем одинаковыми */
-select, 
-input[type="text"], 
-button {
-    font-size: 1.2em;
-    margin: 15px auto;
-    display: block;
-    width: 100%;
-    max-width: 400px;
-    box-sizing: border-box; /* Важно! Включает padding в ширину */
-}
+        select, 
+        input[type="text"], 
+        button {
+            font-size: 1.2em;
+            margin: 15px auto;
+            display: block;
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+        }
 
-select, 
-input[type="text"] {
-    padding: 12px;
-    border: 1px solid #a9c1d9;
-    border-radius: 8px;
-    background: #1a1d23;
-    color: #e0e0e0;
-    height: 50px; /* Фиксированная высота как у кнопки */
-}
+        select, 
+        input[type="text"] {
+            padding: 12px;
+            border: 1px solid #a9c1d9;
+            border-radius: 8px;
+            background: #1a1d23;
+            color: #e0e0e0;
+            height: 50px;
+        }
 
-button {
-    padding: 12px; /* Уменьшил с 16px 50px до 12px для одинаковых отступов */
-    height: 50px; /* Фиксированная высота как у полей */
-    font-weight: bold;
-    background: linear-gradient(135deg, #2a2f3a, #1a1d23);
-    color: #a9c1d9;
-    border: 2px solid #a9c1d9;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.3s;
-    line-height: 1; /* Для правильного вертикального выравнивания */
-}
+        button {
+            padding: 12px;
+            height: 50px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #2a2f3a, #1a1d23);
+            color: #a9c1d9;
+            border: 2px solid #a9c1d9;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            line-height: 1;
+        }
 
-button:hover {
-    transform: translateY(-4px);
-    background: linear-gradient(135deg, #3a3f4a, #2a2d3b);
-    color: white;
-    box-shadow: 0 8px 20px rgba(169,193,217,0.3);
-}
+        button:hover {
+            transform: translateY(-4px);
+            background: linear-gradient(135deg, #3a3f4a, #2a2d3b);
+            color: white;
+            box-shadow: 0 8px 20px rgba(169,193,217,0.3);
+        }
 
-button:disabled { 
-    opacity: 0.5; 
-    cursor: not-allowed; 
-    transform: none; /* Отключаем анимацию при disabled */
-}
+        button:disabled { 
+            opacity: 0.5; 
+            cursor: not-allowed; 
+            transform: none;
+        }
         
-        /* ИСПРАВЛЕНИЕ: добавляем адаптивность для детектора */
         #detector-area {
-            margin: 50px auto 10px;
+            margin: 10px auto 10px;
             width: 380px;
-            max-width: 100%; /* Чтобы на узких экранах не выходил за пределы */
-            height: auto; /* Автовысота для сохранения пропорций */
-            aspect-ratio: 1/1; /* Сохраняем квадратную форму */
+            max-width: 100%;
+            height: auto;
+            aspect-ratio: 1/1;
             position: relative;
             border: 2px solid #a9c1d9;
             border-radius: 12px;
@@ -101,29 +99,46 @@ button:disabled {
             object-fit: contain;
         }
         
-        /* ИСПРАВЛЕНИЕ: делаем номер адаптивным */
         #player-number {
             position: absolute;
-            top: 4%; /* Относительное позиционирование вместо фиксированных пикселей */
+            top: 4%;
             left: 50%;
             transform: translateX(-50%);
-            font-size: min(2.4em, 8vw); /* Адаптивный размер шрифта */
+            font-size: min(2.4em, 8vw);
             font-weight: bold;
             color: #ffcc00;
             text-shadow: 0 0 12px #ffcc00;
             z-index: 3;
-            white-space: nowrap; /* Запрещаем перенос */
-            max-width: 90%; /* Ограничиваем ширину */
+            white-space: nowrap;
+            max-width: 90%;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         
+        /* Стиль для случайного числа */
+        #scan-number {
+            position: absolute;
+            bottom: 4%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: min(1.2em, 4vw);
+            color: #a9c1d9;
+            text-shadow: 0 0 8px #a9c1d9;
+            z-index: 3;
+            background: rgba(0,0,0,0.5);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid #a9c1d9;
+            backdrop-filter: blur(2px);
+            white-space: nowrap;
+        }
+        
         #result {
             margin-top: 0px;
-            font-size: min(1.5em, 8vw); /* Адаптивный размер шрифта */
+            font-size: min(1.5em, 8vw);
             font-weight: bold;
             min-height: 0px;
-            word-break: break-word; /* Чтобы длинный текст не вылезал */
+            word-break: break-word;
         }
         .artifact-rare { color: #00ffea; text-shadow: 0 0 10px #00ffea; }
         .artifact-legend { color: #ff00aa; text-shadow: 0 0 15px #ff00aa; }
@@ -176,7 +191,6 @@ button:disabled {
             color: #0f0;
         }
 
-        /* ИСПРАВЛЕНИЕ: дополнительная адаптация для очень узких экранов */
         @media (max-width: 480px) {
             .container {
                 padding: 20px 15px;
@@ -189,6 +203,10 @@ button:disabled {
             }
             #player-number {
                 font-size: min(2em, 7vw);
+            }
+            #scan-number {
+                font-size: min(1em, 3.5vw);
+                padding: 3px 8px;
             }
         }
     </style>
@@ -219,10 +237,14 @@ button:disabled {
         <input type="text" id="player-id" placeholder="Ваш игровой номер" maxlength="10">
 
         <button id="scan-btn">Сканировать</button>
+        
+        <!-- Индикатор заряда -->
+        <div id="charge-display" style="margin-top: 20px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; font-size: 1.1em; color: #a9c1d9;"></div>
                 
         <div id="detector-area">
             <img id="detector-bg" src="" alt="Детектор">
             <div id="player-number"></div>
+            <div id="scan-number"></div>
         </div>
         
         <div id="result"></div>
@@ -253,6 +275,7 @@ button:disabled {
         const scanBtn = document.getElementById('scan-btn');
         const detectorImg = document.getElementById('detector-bg');
         const playerNumberDisplay = document.getElementById('player-number');
+        const scanNumberDisplay = document.getElementById('scan-number');
         const resultDiv = document.getElementById('result');
 
         const detectorImages = {
@@ -263,6 +286,469 @@ button:disabled {
         };
 
         let artifacts = [];
+        let currentScanNumber = ''; // Переменная для хранения текущего числа сканирования
+        
+        // ============ СИСТЕМА ЗАРЯДОВ ДЛЯ КАЖДОГО ДЕТЕКТОРА ============
+        // Заряды для каждого детектора
+        let detectorCharge = {
+            "Отклик": 5,
+            "Медведь": 4,
+            "Велес": 3,
+            "Сварог": 3
+        };
+
+        // Время последнего обновления для каждого детектора
+        let lastChargeTime = {
+            "Отклик": Date.now(),
+            "Медведь": Date.now(),
+            "Велес": Date.now(),
+            "Сварог": Date.now()
+        };
+
+        let scanTimeout = null;
+        let isScanning = false;
+        let scanStartTime = null;
+        const scanDuration = 5000; // 5 секунд
+
+        // Время восстановления для разных детекторов (в миллисекундах)
+        const detectorRegenTime = {
+            "Отклик": 30000,    // 30 секунд
+            "Медведь": 45000,   // 45 секунд  
+            "Велес": 60000,     // 1 минута
+            "Сварог": 120000    // 2 минуты
+        };
+
+        // Максимальный заряд для разных детекторов
+        const detectorMaxCharge = {
+            "Отклик": 5,
+            "Медведь": 4,
+            "Велес": 3,
+            "Сварог": 3
+        };
+
+        // Ключи для localStorage
+        const STORAGE_KEYS = {
+            CHARGE: 'detector_charge_all',
+            LAST_TIME: 'last_charge_time_all',
+            SCAN_STATE: 'scan_state'
+        };
+
+        // Функция генерации случайного 5-значного числа
+        function generateScanNumber() {
+            return Math.floor(10000 + Math.random() * 90000).toString();
+        }
+
+        // Функция загрузки зарядов из localStorage
+        function loadChargesFromStorage() {
+            try {
+                const savedCharges = localStorage.getItem(STORAGE_KEYS.CHARGE);
+                const savedTimes = localStorage.getItem(STORAGE_KEYS.LAST_TIME);
+                
+                const now = Date.now();
+                
+                if (savedCharges && savedTimes) {
+                    const charges = JSON.parse(savedCharges);
+                    const times = JSON.parse(savedTimes);
+                    
+                    // Для каждого детектора восстанавливаем заряд с учетом прошедшего времени
+                    Object.keys(detectorMaxCharge).forEach(detector => {
+                        const maxCharge = detectorMaxCharge[detector] || 5;
+                        const regenTime = detectorRegenTime[detector] || 60000;
+                        
+                        if (charges[detector] !== undefined && times[detector]) {
+                            const timePassed = now - times[detector];
+                            const chargesToAdd = Math.floor(timePassed / regenTime);
+                            
+                            // Восстанавливаем заряд, но не больше максимума
+                            detectorCharge[detector] = Math.min(maxCharge, charges[detector] + chargesToAdd);
+                            lastChargeTime[detector] = now;
+                            
+                            addLog(`Детектор ${detector}: заряд восстановлен ${detectorCharge[detector]}/${maxCharge} (прошло ${Math.floor(timePassed/1000)}с, +${chargesToAdd} зарядов)`);
+                        } else {
+                            // Если нет данных для детектора - устанавливаем максимум
+                            detectorCharge[detector] = maxCharge;
+                            lastChargeTime[detector] = now;
+                        }
+                    });
+                } else {
+                    // Первый запуск - устанавливаем всем максимум
+                    Object.keys(detectorMaxCharge).forEach(detector => {
+                        detectorCharge[detector] = detectorMaxCharge[detector] || 5;
+                        lastChargeTime[detector] = now;
+                    });
+                }
+                
+                // Сохраняем текущее состояние
+                saveChargesToStorage();
+            } catch (e) {
+                console.error("Ошибка загрузки зарядов:", e);
+                const now = Date.now();
+                Object.keys(detectorMaxCharge).forEach(detector => {
+                    detectorCharge[detector] = detectorMaxCharge[detector] || 5;
+                    lastChargeTime[detector] = now;
+                });
+            }
+            
+            updateChargeDisplay();
+        }
+
+        // Функция сохранения зарядов в localStorage
+        function saveChargesToStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEYS.CHARGE, JSON.stringify(detectorCharge));
+                localStorage.setItem(STORAGE_KEYS.LAST_TIME, JSON.stringify(lastChargeTime));
+            } catch (e) {
+                console.error("Ошибка сохранения зарядов:", e);
+            }
+        }
+
+        // Функция проверки и восстановления заряда для текущего детектора
+        function checkAndRegenCharge() {
+            const currentDetector = detectorType.value;
+            const now = Date.now();
+            const timePassed = now - lastChargeTime[currentDetector];
+            const regenTime = detectorRegenTime[currentDetector] || 60000;
+            const maxCharge = detectorMaxCharge[currentDetector] || 5;
+            const chargesToAdd = Math.floor(timePassed / regenTime);
+            
+            if (chargesToAdd > 0) {
+                const oldCharge = detectorCharge[currentDetector];
+                detectorCharge[currentDetector] = Math.min(maxCharge, detectorCharge[currentDetector] + chargesToAdd);
+                lastChargeTime[currentDetector] = now;
+                
+                if (oldCharge !== detectorCharge[currentDetector]) {
+                    addLog(`Детектор ${currentDetector}: восстановлено ${detectorCharge[currentDetector] - oldCharge} зарядов`);
+                    saveChargesToStorage();
+                    updateChargeDisplay();
+                }
+            }
+        }
+
+        // Функция обновления отображения заряда
+        function updateChargeDisplay() {
+            const chargeElement = document.getElementById('charge-display');
+            if (chargeElement) {
+                const currentDetector = detectorType.value;
+                const currentCharge = detectorCharge[currentDetector] || 0;
+                const maxCharge = detectorMaxCharge[currentDetector] || 5;
+                const regenTime = detectorRegenTime[currentDetector] || 60000;
+                
+                const minutes = Math.floor(regenTime / 60000);
+                const seconds = (regenTime % 60000) / 1000;
+                const timeText = minutes > 0 ? `${minutes} мин` : `${seconds} сек`;
+                
+                // Показываем заряды всех детекторов
+                let allDetectorsInfo = '<br><small>Другие детекторы:</small>';
+                Object.keys(detectorMaxCharge).forEach(detector => {
+                    if (detector !== currentDetector) {
+                        allDetectorsInfo += `<br><small>${detector}: ${detectorCharge[detector] || 0}/${detectorMaxCharge[detector]}</small>`;
+                    }
+                });
+                
+                chargeElement.innerHTML = `🔋 Текущий детектор (${currentDetector}): ${currentCharge}/${maxCharge}<br>
+                    <small>Восстановление: +1 заряд каждые ${timeText}</small>
+                    ${allDetectorsInfo}`;
+            }
+        }
+
+        // Функция траты заряда для текущего детектора
+        function spendCharge() {
+            const currentDetector = detectorType.value;
+            if (detectorCharge[currentDetector] > 0) {
+                detectorCharge[currentDetector]--;
+                lastChargeTime[currentDetector] = Date.now();
+                saveChargesToStorage();
+                updateChargeDisplay();
+                return true;
+            }
+            return false;
+        }
+
+        // Функция получения текущего заряда
+        function getCurrentCharge() {
+            const currentDetector = detectorType.value;
+            return detectorCharge[currentDetector] || 0;
+        }
+
+        // Функция получения максимального заряда для текущего детектора
+        function getCurrentMaxCharge() {
+            return detectorMaxCharge[detectorType.value] || 5;
+        }
+
+        // Функция сохранения состояния сканирования
+        function saveScanState() {
+            if (isScanning && scanStartTime) {
+                const state = {
+                    isScanning: true,
+                    scanStartTime: scanStartTime,
+                    playerId: playerIdInput.value.trim(),
+                    detectorType: detectorType.value,
+                    anomalyType: anomalyType.value,
+                    scanNumber: currentScanNumber
+                };
+                localStorage.setItem(STORAGE_KEYS.SCAN_STATE, JSON.stringify(state));
+            } else {
+                localStorage.removeItem(STORAGE_KEYS.SCAN_STATE);
+            }
+        }
+
+        // Функция восстановления состояния сканирования
+        function restoreScanState() {
+            const savedState = localStorage.getItem(STORAGE_KEYS.SCAN_STATE);
+            if (!savedState) return false;
+            
+            try {
+                const state = JSON.parse(savedState);
+                const now = Date.now();
+                const elapsedTime = now - state.scanStartTime;
+                
+                // Проверяем, тот же ли детектор
+                if (state.detectorType !== detectorType.value) {
+                    localStorage.removeItem(STORAGE_KEYS.SCAN_STATE);
+                    return false;
+                }
+                
+                // Если сканирование должно было уже завершиться
+                if (elapsedTime >= scanDuration) {
+                    // Завершаем сканирование сразу
+                    completeScan(state.playerId, state.detectorType, state.anomalyType);
+                    return true;
+                }
+                
+                // Если сканирование еще идет
+                if (elapsedTime < scanDuration && state.isScanning) {
+                    // Восстанавливаем состояние
+                    isScanning = true;
+                    scanStartTime = state.scanStartTime;
+                    playerIdInput.value = state.playerId;
+                    detectorType.value = state.detectorType;
+                    anomalyType.value = state.anomalyType;
+                    currentScanNumber = state.scanNumber || generateScanNumber();
+                    
+                    // Показываем индикацию
+                    playerNumberDisplay.textContent = state.playerId;
+                    scanNumberDisplay.textContent = `#${currentScanNumber}`;
+                    scanBtn.textContent = "Отменить сканирование";
+                    
+                    const remainingSeconds = Math.ceil((scanDuration - elapsedTime)/1000);
+                    resultDiv.textContent = `Детектор работает... (осталось ${remainingSeconds} сек)`;
+                    
+                    // Устанавливаем новый таймер на оставшееся время
+                    const remainingTime = scanDuration - elapsedTime;
+                    scanTimeout = setTimeout(() => {
+                        completeScan(state.playerId, state.detectorType, state.anomalyType);
+                    }, remainingTime);
+                    
+                    addLog(`Восстановлено сканирование: осталось ${remainingSeconds} сек, номер #${currentScanNumber}`);
+                    return true;
+                }
+            } catch (e) {
+                console.error("Ошибка восстановления состояния:", e);
+            }
+            
+            return false;
+        }
+
+        // Функция завершения сканирования
+        function completeScan(playerId, detector, anomaly) {
+            // Тратим заряд
+            spendCharge();
+            
+            // Выполняем поиск артефакта
+            performArtifactSearch(playerId, detector, anomaly);
+            
+            // Сбрасываем состояние
+            isScanning = false;
+            scanStartTime = null;
+            scanTimeout = null;
+            saveScanState();
+            
+            scanBtn.disabled = false;
+            scanBtn.textContent = "Сканировать";
+        }
+
+        // Функция поиска артефакта
+        function performArtifactSearch(playerId, selectedDetector, selectedAnomaly) {
+            addLog("Детектор: " + selectedDetector);
+            addLog("Аномалия: " + selectedAnomaly);
+
+            if (artifacts.length === 0) {
+                resultDiv.textContent = "База не загружена!";
+                addLog("Ошибка: artifacts пустой");
+                return;
+            }
+
+            addLog("Начало подсчёта кандидатов (взвешенный выбор с учетом аномалии)...");
+
+            let totalWeight = 0;
+            const weightedList = [];
+
+            artifacts.forEach(art => {
+                const artifactAnomaly = art['Аномалия'] || '';
+                const artifactName = art['Артефакт \\ Детектор'] || '';
+                
+                let prob = parseInt(art[selectedDetector] || 0, 10);
+                
+                if (artifactName.toLowerCase() === 'nothing') {
+                    if (prob > 0) {
+                        totalWeight += prob;
+                        weightedList.push({ art, weight: prob });
+                        addLog(`Добавлен: ${artifactName} (ВСЕГДА, вес ${prob} из таблицы)`);
+                    }
+                    return;
+                }
+                
+                let anomalyMatch = false;
+                
+                if (selectedAnomaly === 'none') {
+                    anomalyMatch = !artifactAnomaly || artifactAnomaly.toLowerCase() === 'none' || artifactAnomaly === '';
+                } else {
+                    anomalyMatch = artifactAnomaly.toLowerCase() === selectedAnomaly.toLowerCase();
+                }
+                
+                if (!anomalyMatch) {
+                    return;
+                }
+
+                if (prob > 0) {
+                    totalWeight += prob;
+                    weightedList.push({ art, weight: prob });
+                    addLog(`Добавлен: ${artifactName} (аномалия: ${artifactAnomaly}, вес ${prob})`);
+                }
+            });
+
+            addLog("Общий вес кандидатов с учетом аномалии: " + totalWeight);
+            
+            if (totalWeight === 0) {
+                addLog("Нет артефактов, соответствующих выбранной аномалии");
+                resultDiv.textContent = "В этой аномалии ничего не найдено";
+                notifyTelegram('завершил сканирование', 'Результат: ничего не найдено (нет артефактов в этой аномалии)');
+                return;
+            }
+
+            let artifact = { 'Артефакт \\ Детектор': "Ничего не найдено" };
+
+            if (totalWeight > 0) {
+                let random = Math.random() * totalWeight;
+                for (const item of weightedList) {
+                    random -= item.weight;
+                    if (random <= 0) {
+                        artifact = item.art;
+                        break;
+                    }
+                }
+            }
+
+            const artName = artifact['Артефакт \\ Детектор'] || "без имени";
+            addLog("Выбран: " + artName);
+
+            const lowerName = artName.toLowerCase();
+            if (lowerName === "nothing" || lowerName === "ничего" || lowerName === "") {
+                resultDiv.textContent = "Ничего не найдено";
+                addLog("Результат: ничего");
+                notifyTelegram('завершил сканирование', `Результат: ничего не найдено (номер сканирования: #${currentScanNumber})`);
+            } else {
+                let colorClass = '';
+                const rarity = artifact.rarity?.toLowerCase() || 'common';
+                if (rarity === 'rare') colorClass = 'artifact-rare';
+                if (rarity === 'legend') colorClass = 'artifact-legend';
+
+                resultDiv.innerHTML = "Обнаружен артефакт: " + artName;
+
+                document.getElementById('found-artifact').innerHTML = artName;
+                document.getElementById('artifact-notification').style.display = 'flex';
+
+                addLog("Результат: найден " + artName);
+                notifyTelegram('обнаружил артефакт', `Найден: ${artName} (${rarity}) в аномалии ${selectedAnomaly} (номер сканирования: #${currentScanNumber})`);
+            }
+        }
+
+        // Обработчик смены детектора
+        detectorType.addEventListener('change', () => {
+            const selected = detectorType.value;
+            
+            // Проверяем и восстанавливаем заряд для нового детектора
+            checkAndRegenCharge();
+            
+            // Обновляем отображение
+            updateChargeDisplay();
+            addLog(`Переключено на детектор ${selected}: заряд ${detectorCharge[selected]}/${detectorMaxCharge[selected]}`);
+            
+            // Меняем изображение детектора
+            detectorImg.src = detectorImages[selected] || 'images/detectors/default.png';
+        });
+
+        // Инициализация при загрузке страницы
+        window.addEventListener('load', () => {
+            loadChargesFromStorage();
+            
+            if (!restoreScanState()) {
+                updateChargeDisplay();
+                // Генерируем первое число при загрузке
+                currentScanNumber = generateScanNumber();
+                scanNumberDisplay.textContent = `#${currentScanNumber}`;
+            }
+        });
+
+        // Обработчик клика с отменой и зарядом
+        scanBtn.addEventListener('click', () => {
+            // Проверяем и восстанавливаем заряд для текущего детектора
+            checkAndRegenCharge();
+            
+            // Если уже идет сканирование - отменяем
+            if (isScanning) {
+                if (scanTimeout) {
+                    clearTimeout(scanTimeout);
+                    scanTimeout = null;
+                }
+                
+                isScanning = false;
+                scanStartTime = null;
+                saveScanState();
+                
+                scanBtn.disabled = false;
+                scanBtn.textContent = "Сканировать";
+                resultDiv.textContent = "Сканирование отменено";
+                addLog("Сканирование отменено пользователем");
+                return;
+            }
+            
+            // Проверка заряда для текущего детектора
+            if (getCurrentCharge() <= 0) {
+                alert("Нет заряда для этого детектора! Подожди восстановления.");
+                return;
+            }
+            
+            const playerId = playerIdInput.value.trim();
+            if (!playerId) {
+                alert("Введи номер игрока!");
+                return;
+            }
+
+            // Генерируем новое число для этого сканирования
+            currentScanNumber = generateScanNumber();
+
+            // Начинаем новое сканирование
+            isScanning = true;
+            scanStartTime = Date.now();
+            playerNumberDisplay.textContent = playerId;
+            scanNumberDisplay.textContent = `#${currentScanNumber}`;
+            addLog(`Сканирование начато. Игрок: ${playerId}, номер сканирования: #${currentScanNumber}`);
+            
+            notifyTelegram('начал сканирование', `номер сканирования: #${currentScanNumber}`);
+
+            scanBtn.disabled = false;
+            scanBtn.textContent = "Отменить сканирование";
+            resultDiv.textContent = "Детектор работает... (нажми 'Отменить' для прерывания)";
+
+            // Сохраняем состояние
+            saveScanState();
+
+            // Устанавливаем таймер
+            scanTimeout = setTimeout(() => {
+                completeScan(playerId, detectorType.value, anomalyType.value);
+            }, scanDuration);
+        });
 
         // Функция отправки в Telegram
         function notifyTelegram(action, details = '') {
@@ -276,6 +762,8 @@ button:disabled {
             let text = `🎮 Игрок ${playerId}\n`;
             text += `📡 Детектор: ${detector}\n`;
             text += `🌪 Аномалия: ${anomaly}\n`;
+            text += `🔋 Заряд: ${getCurrentCharge()}/${getCurrentMaxCharge()}\n`;
+            text += `🆔 Номер сканирования: #${currentScanNumber}\n`;
             text += `🔄 Действие: ${action}\n`;
             
             if (details) {
@@ -336,147 +824,6 @@ button:disabled {
         }
 
         loadArtifacts();
-
-        detectorType.addEventListener('change', () => {
-            const selected = detectorType.value;
-            addLog("Выбран детектор: " + selected);
-            detectorImg.src = detectorImages[selected] || 'images/detectors/default.png';
-        });
-
-        scanBtn.addEventListener('click', () => {
-    const playerId = playerIdInput.value.trim();
-    if (!playerId) {
-        alert("Введи номер игрока!");
-        return;
-    }
-
-    playerNumberDisplay.textContent = playerId;
-    addLog("Сканирование начато. Игрок: " + playerId);
-    
-    // Отправляем уведомление о начале сканирования
-    notifyTelegram('начал сканирование');
-
-    scanBtn.disabled = true;
-    scanBtn.textContent = "Сканирую...";
-    resultDiv.textContent = "Детектор работает...";
-
-    const delay = 5000;
-
-    setTimeout(() => {
-        const selectedDetector = detectorType.value;
-        const selectedAnomaly = anomalyType.value;
-
-        addLog("Детектор: " + selectedDetector);
-        addLog("Аномалия: " + selectedAnomaly);
-
-        if (artifacts.length === 0) {
-            resultDiv.textContent = "База не загружена!";
-            addLog("Ошибка: artifacts пустой");
-            scanBtn.disabled = false;
-            scanBtn.textContent = "Сканировать";
-            return;
-        }
-
-        addLog("Начало подсчёта кандидатов (взвешенный выбор с учетом аномалии)...");
-
-        let totalWeight = 0;
-        const weightedList = [];
-
-        artifacts.forEach(art => {
-    const artifactAnomaly = art['Аномалия'] || '';
-    const artifactName = art['Артефакт \\ Детектор'] || '';
-    
-    // Получаем вероятность из таблицы для выбранного детектора
-    let prob = parseInt(art[selectedDetector] || 0, 10);
-    
-    // ОСОБОЕ ПРАВИЛО: артефакт "nothing" всегда участвует, независимо от аномалии
-    if (artifactName.toLowerCase() === 'nothing') {
-        if (prob > 0) {
-            totalWeight += prob;
-            weightedList.push({ art, weight: prob });
-            addLog(`Добавлен: ${artifactName} (ВСЕГДА, вес ${prob} из таблицы)`);
-        }
-        return; // Пропускаем дальнейшие проверки для "nothing"
-    }
-    
-    // Для всех остальных артефактов - проверяем аномалию
-    let anomalyMatch = false;
-    
-    if (selectedAnomaly === 'none') {
-        // Если выбрано "Без аномалии", то артефакт должен быть без аномалии
-        anomalyMatch = !artifactAnomaly || artifactAnomaly.toLowerCase() === 'none' || artifactAnomaly === '';
-    } else {
-        // Если выбрана конкретная аномалия, то артефакт должен быть в этой аномалии
-        anomalyMatch = artifactAnomaly.toLowerCase() === selectedAnomaly.toLowerCase();
-    }
-    
-    // Пропускаем артефакты, не соответствующие выбранной аномалии
-    if (!anomalyMatch) {
-        return;
-    }
-
-    if (prob > 0) {
-        totalWeight += prob;
-        weightedList.push({ art, weight: prob });
-        addLog(`Добавлен: ${artifactName} (аномалия: ${artifactAnomaly}, вес ${prob})`);
-    }
-});
-
-        addLog("Общий вес кандидатов с учетом аномалии: " + totalWeight);
-        
-        // Если после фильтрации не осталось кандидатов
-        if (totalWeight === 0) {
-            addLog("Нет артефактов, соответствующих выбранной аномалии");
-            resultDiv.textContent = "Ничего не найдено";
-            notifyTelegram('завершил сканирование', 'Результат: ничего не найдено');
-            scanBtn.disabled = false;
-            scanBtn.textContent = "Сканировать";
-            return;
-        }
-
-        let artifact = { 'Артефакт \\ Детектор': "Ничего не найдено" };
-
-        if (totalWeight > 0) {
-            let random = Math.random() * totalWeight;
-            for (const item of weightedList) {
-                random -= item.weight;
-                if (random <= 0) {
-                    artifact = item.art;
-                    break;
-                }
-            }
-        }
-
-        const artName = artifact['Артефакт \\ Детектор'] || "без имени";
-        addLog("Выбран: " + artName);
-
-        const lowerName = artName.toLowerCase();
-        if (lowerName === "nothing" || lowerName === "ничего" || lowerName === "") {
-            resultDiv.textContent = "Ничего не найдено";
-            addLog("Результат: ничего");
-            // Отправляем уведомление о пустом результате
-            notifyTelegram('завершил сканирование', 'Результат: ничего не найдено');
-        } else {
-            let colorClass = '';
-            const rarity = artifact.rarity?.toLowerCase() || 'common';
-            if (rarity === 'rare') colorClass = 'artifact-rare';
-            if (rarity === 'legend') colorClass = 'artifact-legend';
-
-            resultDiv.innerHTML = "Обнаружен артефакт: " + artName;
-
-            const color = colorClass === 'artifact-rare' ? '#00ffea' : colorClass === 'artifact-legend' ? '#ff00aa' : '#a9c1d9';
-            document.getElementById('found-artifact').innerHTML = artName;
-            document.getElementById('artifact-notification').style.display = 'flex';
-
-            addLog("Результат: найден " + artName);
-            // Отправляем уведомление о найденном артефакте
-            notifyTelegram('обнаружил артефакт', `Найден: ${artName}`);
-        }
-
-        scanBtn.disabled = false;
-        scanBtn.textContent = "Сканировать";
-    }, delay);
-});
 
         function closeNotification() {
             document.getElementById('artifact-notification').style.display = 'none';
