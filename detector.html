@@ -344,102 +344,139 @@ button:disabled {
         });
 
         scanBtn.addEventListener('click', () => {
-            const playerId = playerIdInput.value.trim();
-            if (!playerId) {
-                alert("Введи номер игрока!");
-                return;
+    const playerId = playerIdInput.value.trim();
+    if (!playerId) {
+        alert("Введи номер игрока!");
+        return;
+    }
+
+    playerNumberDisplay.textContent = playerId;
+    addLog("Сканирование начато. Игрок: " + playerId);
+    
+    // Отправляем уведомление о начале сканирования
+    notifyTelegram('начал сканирование');
+
+    scanBtn.disabled = true;
+    scanBtn.textContent = "Сканирую...";
+    resultDiv.textContent = "Детектор работает...";
+
+    const delay = 5000;
+
+    setTimeout(() => {
+        const selectedDetector = detectorType.value;
+        const selectedAnomaly = anomalyType.value;
+
+        addLog("Детектор: " + selectedDetector);
+        addLog("Аномалия: " + selectedAnomaly);
+
+        if (artifacts.length === 0) {
+            resultDiv.textContent = "База не загружена!";
+            addLog("Ошибка: artifacts пустой");
+            scanBtn.disabled = false;
+            scanBtn.textContent = "Сканировать";
+            return;
+        }
+
+        addLog("Начало подсчёта кандидатов (взвешенный выбор с учетом аномалии)...");
+
+        let totalWeight = 0;
+        const weightedList = [];
+
+        artifacts.forEach(art => {
+    const artifactAnomaly = art['Аномалия'] || '';
+    const artifactName = art['Артефакт \\ Детектор'] || '';
+    
+    // Получаем вероятность из таблицы для выбранного детектора
+    let prob = parseInt(art[selectedDetector] || 0, 10);
+    
+    // ОСОБОЕ ПРАВИЛО: артефакт "nothing" всегда участвует, независимо от аномалии
+    if (artifactName.toLowerCase() === 'nothing') {
+        if (prob > 0) {
+            totalWeight += prob;
+            weightedList.push({ art, weight: prob });
+            addLog(`Добавлен: ${artifactName} (ВСЕГДА, вес ${prob} из таблицы)`);
+        }
+        return; // Пропускаем дальнейшие проверки для "nothing"
+    }
+    
+    // Для всех остальных артефактов - проверяем аномалию
+    let anomalyMatch = false;
+    
+    if (selectedAnomaly === 'none') {
+        // Если выбрано "Без аномалии", то артефакт должен быть без аномалии
+        anomalyMatch = !artifactAnomaly || artifactAnomaly.toLowerCase() === 'none' || artifactAnomaly === '';
+    } else {
+        // Если выбрана конкретная аномалия, то артефакт должен быть в этой аномалии
+        anomalyMatch = artifactAnomaly.toLowerCase() === selectedAnomaly.toLowerCase();
+    }
+    
+    // Пропускаем артефакты, не соответствующие выбранной аномалии
+    if (!anomalyMatch) {
+        return;
+    }
+
+    if (prob > 0) {
+        totalWeight += prob;
+        weightedList.push({ art, weight: prob });
+        addLog(`Добавлен: ${artifactName} (аномалия: ${artifactAnomaly}, вес ${prob})`);
+    }
+});
+
+        addLog("Общий вес кандидатов с учетом аномалии: " + totalWeight);
+        
+        // Если после фильтрации не осталось кандидатов
+        if (totalWeight === 0) {
+            addLog("Нет артефактов, соответствующих выбранной аномалии");
+            resultDiv.textContent = "Ничего не найдено";
+            notifyTelegram('завершил сканирование', 'Результат: ничего не найдено');
+            scanBtn.disabled = false;
+            scanBtn.textContent = "Сканировать";
+            return;
+        }
+
+        let artifact = { 'Артефакт \\ Детектор': "Ничего не найдено" };
+
+        if (totalWeight > 0) {
+            let random = Math.random() * totalWeight;
+            for (const item of weightedList) {
+                random -= item.weight;
+                if (random <= 0) {
+                    artifact = item.art;
+                    break;
+                }
             }
+        }
 
-            playerNumberDisplay.textContent = playerId;
-            addLog("Сканирование начато. Игрок: " + playerId);
-            
-            // Отправляем уведомление о начале сканирования
-            notifyTelegram('начал сканирование');
+        const artName = artifact['Артефакт \\ Детектор'] || "без имени";
+        addLog("Выбран: " + artName);
 
-            scanBtn.disabled = true;
-            scanBtn.textContent = "Сканирую...";
-            resultDiv.textContent = "Детектор работает...";
+        const lowerName = artName.toLowerCase();
+        if (lowerName === "nothing" || lowerName === "ничего" || lowerName === "") {
+            resultDiv.textContent = "Ничего не найдено";
+            addLog("Результат: ничего");
+            // Отправляем уведомление о пустом результате
+            notifyTelegram('завершил сканирование', 'Результат: ничего не найдено');
+        } else {
+            let colorClass = '';
+            const rarity = artifact.rarity?.toLowerCase() || 'common';
+            if (rarity === 'rare') colorClass = 'artifact-rare';
+            if (rarity === 'legend') colorClass = 'artifact-legend';
 
-            const delay = 5000;
+            resultDiv.innerHTML = "Обнаружен артефакт: " + artName;
 
-            setTimeout(() => {
-                const selectedDetector = detectorType.value;
+            const color = colorClass === 'artifact-rare' ? '#00ffea' : colorClass === 'artifact-legend' ? '#ff00aa' : '#a9c1d9';
+            document.getElementById('found-artifact').innerHTML = artName;
+            document.getElementById('artifact-notification').style.display = 'flex';
 
-                addLog("Детектор: " + selectedDetector);
+            addLog("Результат: найден " + artName);
+            // Отправляем уведомление о найденном артефакте
+            notifyTelegram('обнаружил артефакт', `Найден: ${artName}`);
+        }
 
-                if (artifacts.length === 0) {
-                    resultDiv.textContent = "База не загружена!";
-                    addLog("Ошибка: artifacts пустой");
-                    scanBtn.disabled = false;
-                    scanBtn.textContent = "Сканировать";
-                    return;
-                }
-
-                addLog("Начало подсчёта кандидатов (взвешенный выбор)...");
-
-                let totalWeight = 0;
-                const weightedList = [];
-
-                artifacts.forEach(art => {
-                    let prob = parseInt(art[selectedDetector] || 0, 10);
-
-                    // Гарантированный шанс на "ничего" — минимум 20% (можно изменить)
-                    if (art['Артефакт \\ Детектор'] === 'nothing') {
-                        prob = Math.max(prob, 80);
-                    }
-
-                    if (prob > 0) {
-                        totalWeight += prob;
-                        weightedList.push({ art, weight: prob });
-                        addLog(`Добавлен: ${art['Артефакт \\ Детектор']} (вес ${prob})`);
-                    }
-                });
-
-                addLog("Общий вес кандидатов: " + totalWeight);
-
-                let artifact = { 'Артефакт \\ Детектор': "Ничего не найдено" };
-
-                if (totalWeight > 0) {
-                    let random = Math.random() * totalWeight;
-                    for (const item of weightedList) {
-                        random -= item.weight;
-                        if (random <= 0) {
-                            artifact = item.art;
-                            break;
-                        }
-                    }
-                }
-
-                const artName = artifact['Артефакт \\ Детектор'] || "без имени";
-                addLog("Выбран: " + artName);
-
-                const lowerName = artName.toLowerCase();
-                if (lowerName === "nothing" || lowerName === "ничего" || lowerName === "") {
-                    resultDiv.textContent = "Ничего не найдено";
-                    addLog("Результат: ничего");
-                    // Отправляем уведомление о пустом результате
-                    notifyTelegram('завершил сканирование', 'Результат: ничего не найдено');
-                } else {
-                    let colorClass = '';
-                    const rarity = artifact.rarity?.toLowerCase() || 'common';
-                    if (rarity === 'rare') colorClass = 'artifact-rare';
-                    if (rarity === 'legend') colorClass = 'artifact-legend';
-
-                    resultDiv.innerHTML = "Обнаружен артефакт: " + artName;
-
-                    const color = colorClass === 'artifact-rare' ? '#00ffea' : colorClass === 'artifact-legend' ? '#ff00aa' : '#a9c1d9';
-                    document.getElementById('found-artifact').innerHTML = artName;
-                    document.getElementById('artifact-notification').style.display = 'flex';
-
-                    addLog("Результат: найден " + artName);
-                    // Отправляем уведомление о найденном артефакте
-                    notifyTelegram('обнаружил артефакт', `Найден: ${artName} (${rarity})`);
-                }
-
-                scanBtn.disabled = false;
-                scanBtn.textContent = "Сканировать";
-            }, delay);
-        });
+        scanBtn.disabled = false;
+        scanBtn.textContent = "Сканировать";
+    }, delay);
+});
 
         function closeNotification() {
             document.getElementById('artifact-notification').style.display = 'none';
