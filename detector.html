@@ -32,30 +32,53 @@
             width: 100%;
             max-width: 400px;
         }
-        select, input[type="text"] {
-            padding: 12px;
-            border: 1px solid #a9c1d9;
-            border-radius: 8px;
-            background: #1a1d23;
-            color: #e0e0e0;
-        }
-        button {
-            padding: 16px 50px;
-            font-weight: bold;
-            background: linear-gradient(135deg, #2a2f3a, #1a1d23);
-            color: #a9c1d9;
-            border: 2px solid #a9c1d9;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        button:hover {
-            transform: translateY(-4px);
-            background: linear-gradient(135deg, #3a3f4a, #2a2d3b);
-            color: white;
-            box-shadow: 0 8px 20px rgba(169,193,217,0.3);
-        }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        /* Стили для полей ввода и кнопок - делаем одинаковыми */
+select, 
+input[type="text"], 
+button {
+    font-size: 1.2em;
+    margin: 15px auto;
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box; /* Важно! Включает padding в ширину */
+}
+
+select, 
+input[type="text"] {
+    padding: 12px;
+    border: 1px solid #a9c1d9;
+    border-radius: 8px;
+    background: #1a1d23;
+    color: #e0e0e0;
+    height: 50px; /* Фиксированная высота как у кнопки */
+}
+
+button {
+    padding: 12px; /* Уменьшил с 16px 50px до 12px для одинаковых отступов */
+    height: 50px; /* Фиксированная высота как у полей */
+    font-weight: bold;
+    background: linear-gradient(135deg, #2a2f3a, #1a1d23);
+    color: #a9c1d9;
+    border: 2px solid #a9c1d9;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    line-height: 1; /* Для правильного вертикального выравнивания */
+}
+
+button:hover {
+    transform: translateY(-4px);
+    background: linear-gradient(135deg, #3a3f4a, #2a2d3b);
+    color: white;
+    box-shadow: 0 8px 20px rgba(169,193,217,0.3);
+}
+
+button:disabled { 
+    opacity: 0.5; 
+    cursor: not-allowed; 
+    transform: none; /* Отключаем анимацию при disabled */
+}
         
         /* ИСПРАВЛЕНИЕ: добавляем адаптивность для детектора */
         #detector-area {
