@@ -82,7 +82,7 @@ button:disabled {
         
         /* ИСПРАВЛЕНИЕ: добавляем адаптивность для детектора */
         #detector-area {
-            margin: 50px auto 30px;
+            margin: 50px auto 10px;
             width: 380px;
             max-width: 100%; /* Чтобы на узких экранах не выходил за пределы */
             height: auto; /* Автовысота для сохранения пропорций */
@@ -119,10 +119,10 @@ button:disabled {
         }
         
         #result {
-            margin-top: 30px;
+            margin-top: 0px;
             font-size: min(1.5em, 8vw); /* Адаптивный размер шрифта */
             font-weight: bold;
-            min-height: 60px;
+            min-height: 0px;
             word-break: break-word; /* Чтобы длинный текст не вылезал */
         }
         .artifact-rare { color: #00ffea; text-shadow: 0 0 10px #00ffea; }
@@ -219,12 +219,12 @@ button:disabled {
         <input type="text" id="player-id" placeholder="Ваш игровой номер" maxlength="10">
 
         <button id="scan-btn">Сканировать</button>
-
+                
         <div id="detector-area">
             <img id="detector-bg" src="" alt="Детектор">
             <div id="player-number"></div>
         </div>
-
+        
         <div id="result"></div>
 
         <div id="log">Лог отладки (обновляется автоматически):<br></div>
