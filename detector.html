@@ -80,7 +80,7 @@
         }
         
         #detector-area {
-            margin: 10px auto 10px;
+            margin: 50px auto 10px;
             width: 380px;
             max-width: 100%;
             height: auto;
@@ -115,7 +115,6 @@
             text-overflow: ellipsis;
         }
         
-        /* Стиль для случайного числа */
         #scan-number {
             position: absolute;
             bottom: 4%;
@@ -189,6 +188,7 @@
             font-family: monospace;
             font-size: 0.9em;
             color: #0f0;
+            display: none;
         }
 
         @media (max-width: 480px) {
@@ -249,6 +249,7 @@
         
         <div id="result"></div>
 
+        <div id="log">Лог отладки (обновляется автоматически):<br></div>
     </div>
 
     <div id="artifact-notification">
@@ -259,6 +260,19 @@
             <button class="scan-btn" onclick="handleArtifactAction('выбросил')">Выбросить</button>
         </div>
     </div>
+
+    <!-- Аудио элементы для звуков -->
+    <audio id="click-sound" preload="auto" style="display: none;">
+        <source src="sounds/click.m4a" type="audio/mp4">
+        <source src="sounds/click.mp3" type="audio/mpeg">
+        <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="scan-sound" preload="auto" style="display: none;">
+        <source src="sounds/scan.m4a" type="audio/mp4">
+        <source src="sounds/scan.mp3" type="audio/mpeg">
+        <source src="https://www.soundjay.com/misc/sounds/electronic-beeper-1.mp3" type="audio/mpeg">
+    </audio>
 
     <script>
         const logDiv = document.getElementById('log');
@@ -285,10 +299,118 @@
         };
 
         let artifacts = [];
-        let currentScanNumber = ''; // Переменная для хранения текущего числа сканирования
+        let currentScanNumber = '';
+        
+        // ============ ЗВУКИ ============
+        // Получаем элементы аудио
+        const clickSound = document.getElementById('click-sound');
+        const scanSound = document.getElementById('scan-sound');
+        
+        // Флаг, что звуки готовы к воспроизведению
+        let soundsReady = false;
+        
+        // Инициализация звуков (должна быть вызвана после взаимодействия пользователя)
+        function initSounds() {
+            if (soundsReady) return;
+            
+            // Пытаемся загрузить звуки
+            clickSound.load();
+            scanSound.load();
+            
+            // Устанавливаем низкую громкость
+            clickSound.volume = 0.5;
+            scanSound.volume = 0.3;
+            
+            soundsReady = true;
+            addLog("Звуки инициализированы");
+        }
+
+        // Звук нажатия
+        function playClickSound() {
+            if (!soundsReady) {
+                initSounds();
+            }
+            
+            try {
+                // Создаем копию для параллельного воспроизведения
+                const clickClone = clickSound.cloneNode(true);
+                clickClone.volume = 0.5;
+                
+                // Воспроизводим и сразу удаляем после окончания
+                const playPromise = clickClone.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        addLog('Ошибка воспроизведения звука нажатия: ' + error);
+                    });
+                }
+                
+                // Удаляем клон после воспроизведения
+                clickClone.addEventListener('ended', () => {
+                    clickClone.remove();
+                });
+            } catch (e) {
+                addLog('Audio error (click): ' + e);
+            }
+        }
+
+        // Звук сканирования
+        function playScanSound() {
+            if (!soundsReady) {
+                initSounds();
+            }
+            
+            try {
+                const scanClone = scanSound.cloneNode(true);
+                scanClone.volume = 0.3;
+                
+                const playPromise = scanClone.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        addLog('Ошибка воспроизведения звука сканирования: ' + error);
+                    });
+                }
+                
+                scanClone.addEventListener('ended', () => {
+                    scanClone.remove();
+                });
+            } catch (e) {
+                addLog('Audio error (scan): ' + e);
+            }
+        }
+
+        // Переменные для управления звуками сканирования
+        let scanSoundInterval = null;
+        const scanSoundIntervalTime = 3000; // 3 секунды между звуками
+
+        // Функция запуска звуков сканирования
+        function startScanSounds() {
+            if (scanSoundInterval) {
+                clearInterval(scanSoundInterval);
+            }
+            
+            // Небольшая задержка перед первым звуком
+            setTimeout(() => {
+                playScanSound();
+            }, 100);
+            
+            // Затем каждые 3 секунды
+            scanSoundInterval = setInterval(playScanSound, scanSoundIntervalTime);
+            
+            addLog("Звуки сканирования запущены");
+        }
+
+        // Функция остановки звуков сканирования
+        function stopScanSounds() {
+            if (scanSoundInterval) {
+                clearInterval(scanSoundInterval);
+                scanSoundInterval = null;
+                addLog("Звуки сканирования остановлены");
+            }
+        }
         
         // ============ СИСТЕМА ЗАРЯДОВ ДЛЯ КАЖДОГО ДЕТЕКТОРА ============
-        // Заряды для каждого детектора
         let detectorCharge = {
             "Отклик": 5,
             "Медведь": 4,
@@ -296,7 +418,6 @@
             "Сварог": 3
         };
 
-        // Время последнего обновления для каждого детектора
         let lastChargeTime = {
             "Отклик": Date.now(),
             "Медведь": Date.now(),
@@ -309,15 +430,13 @@
         let scanStartTime = null;
         const scanDuration = 5000; // 5 секунд
 
-        // Время восстановления для разных детекторов (в миллисекундах)
         const detectorRegenTime = {
-            "Отклик": 3600000,    // 30 секунд
-            "Медведь": 3600000,   // 45 секунд  
-            "Велес": 3600000,     // 1 минута
-            "Сварог": 3600000    // 2 минуты
+            "Отклик": 7200000,
+            "Медведь": 10800000,
+            "Велес": 10800000,
+            "Сварог": 10800000
         };
 
-        // Максимальный заряд для разных детекторов
         const detectorMaxCharge = {
             "Отклик": 5,
             "Медведь": 4,
@@ -325,31 +444,26 @@
             "Сварог": 3
         };
 
-        // Ключи для localStorage
         const STORAGE_KEYS = {
             CHARGE: 'detector_charge_all',
             LAST_TIME: 'last_charge_time_all',
             SCAN_STATE: 'scan_state'
         };
 
-        // Функция генерации случайного 5-значного числа
         function generateScanNumber() {
             return Math.floor(10000 + Math.random() * 90000).toString();
         }
 
-        // Функция загрузки зарядов из localStorage
         function loadChargesFromStorage() {
             try {
                 const savedCharges = localStorage.getItem(STORAGE_KEYS.CHARGE);
                 const savedTimes = localStorage.getItem(STORAGE_KEYS.LAST_TIME);
-                
                 const now = Date.now();
                 
                 if (savedCharges && savedTimes) {
                     const charges = JSON.parse(savedCharges);
                     const times = JSON.parse(savedTimes);
                     
-                    // Для каждого детектора восстанавливаем заряд с учетом прошедшего времени
                     Object.keys(detectorMaxCharge).forEach(detector => {
                         const maxCharge = detectorMaxCharge[detector] || 5;
                         const regenTime = detectorRegenTime[detector] || 60000;
@@ -357,41 +471,28 @@
                         if (charges[detector] !== undefined && times[detector]) {
                             const timePassed = now - times[detector];
                             const chargesToAdd = Math.floor(timePassed / regenTime);
-                            
-                            // Восстанавливаем заряд, но не больше максимума
                             detectorCharge[detector] = Math.min(maxCharge, charges[detector] + chargesToAdd);
                             lastChargeTime[detector] = now;
                             
                             addLog(`Детектор ${detector}: заряд восстановлен ${detectorCharge[detector]}/${maxCharge} (прошло ${Math.floor(timePassed/1000)}с, +${chargesToAdd} зарядов)`);
                         } else {
-                            // Если нет данных для детектора - устанавливаем максимум
                             detectorCharge[detector] = maxCharge;
                             lastChargeTime[detector] = now;
                         }
                     });
                 } else {
-                    // Первый запуск - устанавливаем всем максимум
                     Object.keys(detectorMaxCharge).forEach(detector => {
                         detectorCharge[detector] = detectorMaxCharge[detector] || 5;
                         lastChargeTime[detector] = now;
                     });
                 }
-                
-                // Сохраняем текущее состояние
                 saveChargesToStorage();
             } catch (e) {
                 console.error("Ошибка загрузки зарядов:", e);
-                const now = Date.now();
-                Object.keys(detectorMaxCharge).forEach(detector => {
-                    detectorCharge[detector] = detectorMaxCharge[detector] || 5;
-                    lastChargeTime[detector] = now;
-                });
             }
-            
             updateChargeDisplay();
         }
 
-        // Функция сохранения зарядов в localStorage
         function saveChargesToStorage() {
             try {
                 localStorage.setItem(STORAGE_KEYS.CHARGE, JSON.stringify(detectorCharge));
@@ -401,7 +502,6 @@
             }
         }
 
-        // Функция проверки и восстановления заряда для текущего детектора
         function checkAndRegenCharge() {
             const currentDetector = detectorType.value;
             const now = Date.now();
@@ -423,7 +523,6 @@
             }
         }
 
-        // Функция обновления отображения заряда
         function updateChargeDisplay() {
             const chargeElement = document.getElementById('charge-display');
             if (chargeElement) {
@@ -436,7 +535,6 @@
                 const seconds = (regenTime % 60000) / 1000;
                 const timeText = minutes > 0 ? `${minutes} мин` : `${seconds} сек`;
                 
-                // Показываем заряды всех детекторов
                 let allDetectorsInfo = '<br><small>Другие детекторы:</small>';
                 Object.keys(detectorMaxCharge).forEach(detector => {
                     if (detector !== currentDetector) {
@@ -450,7 +548,6 @@
             }
         }
 
-        // Функция траты заряда для текущего детектора
         function spendCharge() {
             const currentDetector = detectorType.value;
             if (detectorCharge[currentDetector] > 0) {
@@ -463,18 +560,14 @@
             return false;
         }
 
-        // Функция получения текущего заряда
         function getCurrentCharge() {
-            const currentDetector = detectorType.value;
-            return detectorCharge[currentDetector] || 0;
+            return detectorCharge[detectorType.value] || 0;
         }
 
-        // Функция получения максимального заряда для текущего детектора
         function getCurrentMaxCharge() {
             return detectorMaxCharge[detectorType.value] || 5;
         }
 
-        // Функция сохранения состояния сканирования
         function saveScanState() {
             if (isScanning && scanStartTime) {
                 const state = {
@@ -491,7 +584,6 @@
             }
         }
 
-        // Функция восстановления состояния сканирования
         function restoreScanState() {
             const savedState = localStorage.getItem(STORAGE_KEYS.SCAN_STATE);
             if (!savedState) return false;
@@ -501,22 +593,17 @@
                 const now = Date.now();
                 const elapsedTime = now - state.scanStartTime;
                 
-                // Проверяем, тот же ли детектор
                 if (state.detectorType !== detectorType.value) {
                     localStorage.removeItem(STORAGE_KEYS.SCAN_STATE);
                     return false;
                 }
                 
-                // Если сканирование должно было уже завершиться
                 if (elapsedTime >= scanDuration) {
-                    // Завершаем сканирование сразу
                     completeScan(state.playerId, state.detectorType, state.anomalyType);
                     return true;
                 }
                 
-                // Если сканирование еще идет
                 if (elapsedTime < scanDuration && state.isScanning) {
-                    // Восстанавливаем состояние
                     isScanning = true;
                     scanStartTime = state.scanStartTime;
                     playerIdInput.value = state.playerId;
@@ -524,7 +611,6 @@
                     anomalyType.value = state.anomalyType;
                     currentScanNumber = state.scanNumber || generateScanNumber();
                     
-                    // Показываем индикацию
                     playerNumberDisplay.textContent = state.playerId;
                     scanNumberDisplay.textContent = `#${currentScanNumber}`;
                     scanBtn.textContent = "Отменить сканирование";
@@ -532,7 +618,8 @@
                     const remainingSeconds = Math.ceil((scanDuration - elapsedTime)/1000);
                     resultDiv.textContent = `Детектор работает... (осталось ${remainingSeconds} сек)`;
                     
-                    // Устанавливаем новый таймер на оставшееся время
+                    startScanSounds();
+                    
                     const remainingTime = scanDuration - elapsedTime;
                     scanTimeout = setTimeout(() => {
                         completeScan(state.playerId, state.detectorType, state.anomalyType);
@@ -544,19 +631,14 @@
             } catch (e) {
                 console.error("Ошибка восстановления состояния:", e);
             }
-            
             return false;
         }
 
-        // Функция завершения сканирования
         function completeScan(playerId, detector, anomaly) {
-            // Тратим заряд
+            stopScanSounds();
             spendCharge();
-            
-            // Выполняем поиск артефакта
             performArtifactSearch(playerId, detector, anomaly);
             
-            // Сбрасываем состояние
             isScanning = false;
             scanStartTime = null;
             scanTimeout = null;
@@ -566,7 +648,6 @@
             scanBtn.textContent = "Сканировать";
         }
 
-        // Функция поиска артефакта
         function performArtifactSearch(playerId, selectedDetector, selectedAnomaly) {
             addLog("Детектор: " + selectedDetector);
             addLog("Аномалия: " + selectedAnomaly);
@@ -662,57 +743,50 @@
             }
         }
 
-        // Обработчик смены детектора
         detectorType.addEventListener('change', () => {
             const selected = detectorType.value;
-            
-            // Проверяем и восстанавливаем заряд для нового детектора
             checkAndRegenCharge();
-            
-            // Обновляем отображение
             updateChargeDisplay();
             addLog(`Переключено на детектор ${selected}: заряд ${detectorCharge[selected]}/${detectorMaxCharge[selected]}`);
-            
-            // Меняем изображение детектора
             detectorImg.src = detectorImages[selected] || 'images/detectors/default.png';
         });
 
-        // Инициализация при загрузке страницы
         window.addEventListener('load', () => {
             loadChargesFromStorage();
-            
             if (!restoreScanState()) {
                 updateChargeDisplay();
-                // Генерируем первое число при загрузке
                 currentScanNumber = generateScanNumber();
                 scanNumberDisplay.textContent = `#${currentScanNumber}`;
             }
+            
+            // Инициализируем звуки при загрузке
+            initSounds();
         });
 
-        // Обработчик клика с отменой и зарядом
         scanBtn.addEventListener('click', () => {
-            // Проверяем и восстанавливаем заряд для текущего детектора
+            // Инициализируем звуки если ещё не
+            if (!soundsReady) {
+                initSounds();
+            }
+            
+            playClickSound();
             checkAndRegenCharge();
             
-            // Если уже идет сканирование - отменяем
             if (isScanning) {
                 if (scanTimeout) {
                     clearTimeout(scanTimeout);
                     scanTimeout = null;
                 }
-                
+                stopScanSounds();
                 isScanning = false;
                 scanStartTime = null;
                 saveScanState();
-                
-                scanBtn.disabled = false;
                 scanBtn.textContent = "Сканировать";
                 resultDiv.textContent = "Сканирование отменено";
                 addLog("Сканирование отменено пользователем");
                 return;
             }
             
-            // Проверка заряда для текущего детектора
             if (getCurrentCharge() <= 0) {
                 alert("Нет заряда для этого детектора! Подожди восстановления.");
                 return;
@@ -724,10 +798,7 @@
                 return;
             }
 
-            // Генерируем новое число для этого сканирования
             currentScanNumber = generateScanNumber();
-
-            // Начинаем новое сканирование
             isScanning = true;
             scanStartTime = Date.now();
             playerNumberDisplay.textContent = playerId;
@@ -736,20 +807,17 @@
             
             notifyTelegram('начал сканирование', `номер сканирования: #${currentScanNumber}`);
 
-            scanBtn.disabled = false;
             scanBtn.textContent = "Отменить сканирование";
             resultDiv.textContent = "Детектор работает... (нажми 'Отменить' для прерывания)";
 
-            // Сохраняем состояние
+            startScanSounds();
             saveScanState();
 
-            // Устанавливаем таймер
             scanTimeout = setTimeout(() => {
                 completeScan(playerId, detectorType.value, anomalyType.value);
             }, scanDuration);
         });
 
-        // Функция отправки в Telegram
         function notifyTelegram(action, details = '') {
             const token = '7601048796:AAG6n3IO8E4K0CgqAl-SETz70ERsSci9DL4';
             const chatId = '-1003590431257';
@@ -773,7 +841,6 @@
                 .catch(error => addLog('Ошибка отправки в Telegram: ' + error));
         }
 
-        // Обработка действий с артефактом
         function handleArtifactAction(action) {
             const artifactName = document.getElementById('found-artifact').textContent;
             notifyTelegram(action, `Артефакт: ${artifactName}`);
@@ -822,12 +889,11 @@
             }
         }
 
-        loadArtifacts();
-
         function closeNotification() {
             document.getElementById('artifact-notification').style.display = 'none';
         }
 
+        loadArtifacts();
         detectorImg.src = detectorImages[detectorType.value];
     </script>
 </body>
