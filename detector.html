@@ -428,7 +428,7 @@
         let scanTimeout = null;
         let isScanning = false;
         let scanStartTime = null;
-        const scanDuration = 5000; // 5 секунд
+        const scanDuration = Math.floor(Math.random() * (20000 - 10000 + 1)) + 10000; // 10–20 секунд
 
         const detectorRegenTime = {
             "Отклик": 7200000,
