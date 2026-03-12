@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEZ SRP — Торговля</title>
+    <style>
+        body {
+            background: #17161c url('images/fon.jpg') no-repeat center fixed;
+            background-size: cover;
+            font-family: Arial, sans-serif;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(0,0,0,0.75);
+            padding: 40px;
+            border-radius: 12px;
+            max-width: 700px;
+            margin: 40px auto;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            text-align: center;
+        }
+        h1 { font-size: 2.6em; color: #DCDCDC; margin-bottom: 10px; }
+        .subtitle { font-size: 1.3em; opacity: 0.9; margin-bottom: 35px; }
+        label, input, select, button {
+            font-size: 1.2em;
+            margin: 15px auto;
+            display: block;
+            width: 100%;
+            max-width: 400px;
+        }
+        input[type="text"], input[type="number"], select {
+            padding: 12px;
+            border: 1px solid #a9c1d9;
+            border-radius: 8px;
+            background: #1a1d23;
+            color: #e0e0e0;
+        }
+        button {
+            padding: 16px 50px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #2a2f3a, #1a1d23);
+            color: #a9c1d9;
+            border: 2px solid #a9c1d9;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        button:hover {
+            transform: translateY(-4px);
+            background: linear-gradient(135deg, #3a3f4a, #2a2d3b);
+            color: white;
+            box-shadow: 0 8px 20px rgba(169,193,217,0.3);
+        }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        #items-list {
+            margin-top: 20px;
+            text-align: left;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .item {
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #a9c1d9;
+        }
+        .item button {
+            margin-top: 10px;
+            width: auto;
+            padding: 10px 20px;
+            font-size: 1em;
+        }
+        #cart {
+            margin-top: 30px;
+            background: rgba(0,0,0,0.6);
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #a9c1d9;
+        }
+        #cart-items {
+            text-align: left;
+            margin-bottom: 15px;
+        }
+        #cart-total {
+            font-size: 1.4em;
+            font-weight: bold;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 1.4em;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Торговля</h1>
+        <div class="subtitle">CEZ SRP</div>
+
+        <label for="player-id">Номер игрока:</label>
+        <input type="text" id="player-id" placeholder="Например: 1428" maxlength="10">
+
+        <label for="money">Текущее количество денег:</label>
+        <input type="number" id="money" placeholder="Например: 5000" min="0">
+
+        <label for="trader">Выберите торговца:</label>
+        <select id="trader">
+            <option value="">Загружается...</option>
+        </select>
+
+        <div id="items-list"></div>
+
+        <div id="cart">
+            <h3>Корзина</h3>
+            <div id="cart-items">Корзина пуста</div>
+            <div id="cart-total">Итого: 0</div>
+            <button id="buy-btn" disabled onclick="buyCart()">Купить всё</button>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const playerIdInput = document.getElementById('player-id');
+        const moneyInput = document.getElementById('money');
+        const traderSelect = document.getElementById('trader');
+        const itemsList = document.getElementById('items-list');
+        const cartItemsDiv = document.getElementById('cart-items');
+        const cartTotalDiv = document.getElementById('cart-total');
+        const buyBtn = document.getElementById('buy-btn');
+        const resultDiv = document.getElementById('result');
+
+        let tradersData = [];
+        let cart = [];
+
+        async function loadTraders() {
+            try {
+                const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQH7LcXjMumSy4IsPJ-wWnxMF91UeyF193u7deot4q2bJC_Koa03Sh5OIr71JJ2UNk7rKrrc5LxcW7M/pub?output=csv&gid=1196644489&single=true';
+
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP ошибка: ${response.status}`);
+
+                const csvText = await response.text();
+                const lines = csvText.trim().split('\n');
+
+                if (lines.length < 2) throw new Error('Таблица пустая');
+
+                const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+
+                tradersData = [];
+                const traderMap = {};
+
+                lines.slice(1).forEach(line => {
+                    const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+                    const row = {};
+                    headers.forEach((h, i) => row[h] = values[i] || '');
+
+                    const trader = row['имя торговца'] || row['Имя торговца'] || '';
+                    const itemName = row['название предмета'] || row['Название предмета'] || '';
+                    const price = parseInt(row['цена'] || row['Цена'] || '0', 10);
+                    const quantity = parseInt(row['количество'] || row['Количество'] || '0', 10);
+                    const desc = row['описание'] || row['Описание'] || '';
+
+                    if (!trader || !itemName || isNaN(price)) return;
+
+                    if (!traderMap[trader]) {
+                        traderMap[trader] = { trader, items: [] };
+                        tradersData.push(traderMap[trader]);
+                    }
+
+                    traderMap[trader].items.push({ name: itemName, price, quantity, desc });
+                });
+
+                traderSelect.innerHTML = '<option value="">Выберите торговца</option>';
+                tradersData.forEach(t => {
+                    const option = document.createElement('option');
+                    option.value = t.trader;
+                    option.textContent = t.trader;
+                    traderSelect.appendChild(option);
+                });
+            } catch (err) {
+                resultDiv.textContent = 'Не удалось загрузить торговцев';
+            }
+        }
+
+        loadTraders();
+
+        traderSelect.addEventListener('change', () => {
+            const selectedTrader = traderSelect.value;
+            itemsList.innerHTML = '';
+            cart = [];
+            updateCart();
+
+            if (!selectedTrader) return;
+
+            const trader = tradersData.find(t => t.trader === selectedTrader);
+            if (!trader) return;
+
+            trader.items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.innerHTML = `
+                    <strong>${item.name}</strong><br>
+                    Цена: ${item.price}<br>
+                    В наличии: ${item.quantity} шт.<br>
+                    ${item.desc ? `Описание: ${item.desc}<br>` : ''}
+                    <button class="add-to-cart" ${item.quantity <= 0 ? 'disabled' : ''}>В корзину</button>
+                `;
+                const btn = div.querySelector('.add-to-cart');
+                btn.dataset.name = item.name;
+                btn.dataset.price = item.price;
+                btn.dataset.trader = selectedTrader;
+                btn.dataset.quantity = item.quantity;
+                itemsList.appendChild(div);
+            });
+
+            document.querySelectorAll('.add-to-cart').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const name = this.dataset.name;
+                    const price = Number(this.dataset.price);
+                    const trader = this.dataset.trader;
+                    const quantity = Number(this.dataset.quantity);
+
+                    if (isNaN(price) || quantity <= 0) return;
+
+                    addToCart(name, price, trader);
+                });
+            });
+        });
+
+        function addToCart(name, price, trader) {
+            cart.push({ name, price, trader });
+            updateCart();
+        }
+
+        function updateCart() {
+            if (cart.length === 0) {
+                cartItemsDiv.innerHTML = "Корзина пуста";
+                cartTotalDiv.innerHTML = "Итого: 0";
+                buyBtn.disabled = true;
+                return;
+            }
+
+            let html = '';
+            let total = 0;
+
+            cart.forEach((item, index) => {
+                total += item.price;
+                html += `<div>${item.name} — ${item.price} (от ${item.trader}) 
+                         <button onclick="removeFromCart(${index})">Удалить</button></div>`;
+            });
+
+            cartItemsDiv.innerHTML = html;
+            cartTotalDiv.innerHTML = `Итого: ${total}`;
+
+            const money = Number(moneyInput.value) || 0;
+            buyBtn.disabled = money < total;
+
+            if (money < total) {
+                resultDiv.innerHTML = `<span style="color:#ff4444">Недостаточно денег! Нужно: ${total}</span>`;
+            } else {
+                resultDiv.innerHTML = "";
+            }
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCart();
+        }
+
+        function buyCart() {
+            const money = Number(moneyInput.value) || 0;
+            let total = 0;
+            cart.forEach(item => total += item.price);
+
+            if (money < total) {
+                resultDiv.innerHTML = `<span style="color:#ff4444">Недостаточно денег!</span>`;
+                return;
+            }
+
+            moneyInput.value = money - total;
+            resultDiv.innerHTML = `<span style="color:#00ff00">Куплено за ${total}! Остаток: ${money - total}</span>`;
+
+            const token = '7601048796:AAG6n3IO8E4K0CgqAl-SETz70ERsSci9DL4';
+            const chatId = '-1003590431257';
+
+            const playerId = playerIdInput.value.trim() || 'неизвестный';
+
+            let text = `🎮 Игрок ${playerId}\n`;
+            text += `💰 Сумма покупки: ${total}\n`;
+            text += `🛒 Товары:\n`;
+
+            cart.forEach(item => {
+                text += `${item.name} - ${item.price} (от ${item.trader})\n`;
+            });
+
+            text += `🔄 Действие: куплено`;
+
+                        fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}`);
+
+            cart = [];
+            updateCart();
+        }
+
+        moneyInput.addEventListener('input', updateCart);
+    </script>
+</body>
+</html>
