@@ -25,6 +25,23 @@
         }
         h1 { font-size: 2.6em; color: #DCDCDC; margin-bottom: 10px; }
         .subtitle { font-size: 1.3em; opacity: 0.9; margin-bottom: 35px; }
+        .mode-buttons {
+            margin: 20px 0;
+        }
+        .mode-btn {
+            padding: 12px 30px;
+            margin: 0 10px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border: 2px solid #a9c1d9;
+            border-radius: 10px;
+            background: #1a1d23;
+            color: #a9c1d9;
+        }
+        .mode-btn.active {
+            background: #a9c1d9;
+            color: #000;
+        }
         label, input, select, button {
             font-size: 1.2em;
             margin: 15px auto;
@@ -69,12 +86,15 @@
             margin: 10px 0;
             border-radius: 8px;
             border: 1px solid #a9c1d9;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .item button {
             margin-top: 10px;
-            width: auto;
-            padding: 10px 20px;
-            font-size: 1em;
+            width: 80%;
+            max-width: 200px;
+            text-align: center;
         }
         #cart {
             margin-top: 30px;
@@ -95,6 +115,11 @@
             margin-top: 20px;
             font-size: 1.4em;
         }
+        .mode-buttons, #cart button {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
     </style>
 </head>
 <body>
@@ -103,11 +128,16 @@
         <h1>Торговля</h1>
         <div class="subtitle">CEZ SRP</div>
 
+        <div class="mode-buttons">
+            <button class="mode-btn active" onclick="setMode('sell')">Продажа</button>
+            <button class="mode-btn" onclick="setMode('buyback')">Скупка</button>
+        </div>
+
         <label for="player-id">Номер игрока:</label>
-        <input type="text" id="player-id" placeholder="Ваш игровой номер" maxlength="10">
+        <input type="text" id="player-id" placeholder="Например: 1428" maxlength="10">
 
         <label for="money">Текущее количество денег:</label>
-        <input type="number" id="money" placeholder="Количество денег в таблице" min="0">
+        <input type="number" id="money" placeholder="Например: 5000" min="0">
 
         <label for="trader">Выберите торговца:</label>
         <select id="trader">
@@ -117,10 +147,10 @@
         <div id="items-list"></div>
 
         <div id="cart">
-            <h3>Корзина</h3>
+            <h3 id="cart-title">Корзина (Продажа)</h3>
             <div id="cart-items">Корзина пуста</div>
             <div id="cart-total">Итого: 0</div>
-            <button id="buy-btn" disabled onclick="buyCart()">Купить всё</button>
+            <button id="buy-btn" disabled onclick="buyCart()">Подтвердить</button>
         </div>
 
         <div id="result"></div>
@@ -135,21 +165,24 @@
         const cartTotalDiv = document.getElementById('cart-total');
         const buyBtn = document.getElementById('buy-btn');
         const resultDiv = document.getElementById('result');
+        const cartTitle = document.getElementById('cart-title');
 
         let tradersData = [];
+        let playersData = [];
         let cart = [];
+        let currentMode = 'sell';
 
         async function loadTraders() {
             try {
                 const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQH7LcXjMumSy4IsPJ-wWnxMF91UeyF193u7deot4q2bJC_Koa03Sh5OIr71JJ2UNk7rKrrc5LxcW7M/pub?output=csv&gid=1196644489&single=true';
 
                 const response = await fetch(url);
-                if (!response.ok) throw new Error(`HTTP ошибка: ${response.status}`);
+                if (!response.ok) throw new Error();
 
                 const csvText = await response.text();
                 const lines = csvText.trim().split('\n');
 
-                if (lines.length < 2) throw new Error('Таблица пустая');
+                if (lines.length < 2) return;
 
                 const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
 
@@ -163,18 +196,20 @@
 
                     const trader = row['имя торговца'] || row['Имя торговца'] || '';
                     const itemName = row['название предмета'] || row['Название предмета'] || '';
-                    const price = parseInt(row['цена'] || row['Цена'] || '0', 10);
+                    const sellPrice = parseInt(row['цена'] || row['Цена'] || '0', 10);
+                    const buybackPrice = parseInt(row['цена скупки'] || row['Цена скупки'] || '0', 10);
                     const quantity = parseInt(row['количество'] || row['Количество'] || '0', 10);
                     const desc = row['описание'] || row['Описание'] || '';
 
-                    if (!trader || !itemName || isNaN(price)) return;
+                    // Показываем товар только если есть цена для текущего режима
+                    if (!trader || !itemName) return;
 
                     if (!traderMap[trader]) {
                         traderMap[trader] = { trader, items: [] };
                         tradersData.push(traderMap[trader]);
                     }
 
-                    traderMap[trader].items.push({ name: itemName, price, quantity, desc });
+                    traderMap[trader].items.push({ name: itemName, sellPrice, buybackPrice, quantity, desc });
                 });
 
                 traderSelect.innerHTML = '<option value="">Выберите торговца</option>';
@@ -189,7 +224,69 @@
             }
         }
 
+        async function loadPlayers() {
+            try {
+                const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT829TBLvHU53Xzuzs9t87rFsRSysk-L_YmIZKL3KFYtq9fXyys3GpIpCAH0MBYSm_qVmp8UVRhVUn_/pub?output=csv&gid=0&single=true';
+
+                const response = await fetch(url);
+                if (!response.ok) return;
+
+                const csvText = await response.text();
+                const lines = csvText.trim().split('\n');
+
+                playersData = [];
+
+                for (let i = 1; i < lines.length; i += 12) {
+                    const line = lines[i];
+                    if (!line) continue;
+
+                    const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+                    const playerId = values[0];
+
+                    if (!playerId || isNaN(parseInt(playerId, 10))) continue;
+
+                    const moneyLineIndex = i + 9;
+                    if (moneyLineIndex >= lines.length) break;
+
+                    const moneyValues = lines[moneyLineIndex].split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+                    const money = parseInt(moneyValues[1], 10) || 0;
+
+                    playersData.push({ id: playerId, money });
+                }
+            } catch (err) {
+                // тихо
+            }
+        }
+
+        loadPlayers();
         loadTraders();
+
+        playerIdInput.addEventListener('input', checkPlayerId);
+        playerIdInput.addEventListener('blur', checkPlayerId);
+
+        function checkPlayerId() {
+            const inputId = playerIdInput.value.trim();
+            if (!inputId) return;
+
+            const found = playersData.find(p => p.id === inputId);
+
+            if (found) {
+                moneyInput.value = found.money;
+            }
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            cartTitle.textContent = mode === 'sell' ? 'Корзина (Продажа)' : 'Корзина (Скупка)';
+            cart = [];
+            updateCart();
+
+            const selectedTrader = traderSelect.value;
+            if (selectedTrader) traderSelect.dispatchEvent(new Event('change'));
+        }
 
         traderSelect.addEventListener('change', () => {
             const selectedTrader = traderSelect.value;
@@ -203,20 +300,29 @@
             if (!trader) return;
 
             trader.items.forEach(item => {
+                let price = currentMode === 'sell' ? item.sellPrice : item.buybackPrice;
+                let actionText = currentMode === 'sell' ? 'В корзину' : 'Продать торговцу';
+                let disabled = (currentMode === 'sell' && item.quantity <= 0) || (currentMode === 'buyback' && price <= 0);
+
+                // Показываем товар только если цена > 0 для текущего режима
+                if ((currentMode === 'sell' && item.sellPrice <= 0) ||
+                    (currentMode === 'buyback' && item.buybackPrice <= 0)) {
+                    return; // пропускаем товар
+                }
+
                 const div = document.createElement('div');
                 div.className = 'item';
                 div.innerHTML = `
                     <strong>${item.name}</strong><br>
-                    Цена: ${item.price}<br>
-                    В наличии: ${item.quantity} шт.<br>
+                    ${currentMode === 'sell' ? `Цена: ${price}<br>В наличии: ${item.quantity} шт.` : `Скупает за: ${price}`}<br>
                     ${item.desc ? `Описание: ${item.desc}<br>` : ''}
-                    <button class="add-to-cart" ${item.quantity <= 0 ? 'disabled' : ''}>В корзину</button>
+                    <button class="add-to-cart" \( {disabled ? 'disabled' : ''}> \ ${actionText}</button>
                 `;
+                div.style.textAlign = 'center';
                 const btn = div.querySelector('.add-to-cart');
                 btn.dataset.name = item.name;
-                btn.dataset.price = item.price;
+                btn.dataset.price = price;
                 btn.dataset.trader = selectedTrader;
-                btn.dataset.quantity = item.quantity;
                 itemsList.appendChild(div);
             });
 
@@ -225,9 +331,8 @@
                     const name = this.dataset.name;
                     const price = Number(this.dataset.price);
                     const trader = this.dataset.trader;
-                    const quantity = Number(this.dataset.quantity);
 
-                    if (isNaN(price) || quantity <= 0) return;
+                    if (isNaN(price)) return;
 
                     addToCart(name, price, trader);
                 });
@@ -242,7 +347,7 @@
         function updateCart() {
             if (cart.length === 0) {
                 cartItemsDiv.innerHTML = "Корзина пуста";
-                cartTotalDiv.innerHTML = "Итого: 0";
+                cartTotalDiv.innerHTML = currentMode === 'sell' ? "Итого к оплате: 0" : "Итого к получению: 0";
                 buyBtn.disabled = true;
                 return;
             }
@@ -252,21 +357,17 @@
 
             cart.forEach((item, index) => {
                 total += item.price;
-                html += `<div>${item.name} — ${item.price} (от ${item.trader}) 
-                         <button onclick="removeFromCart(${index})">Удалить</button></div>`;
+                html += `<div style="text-align:center; margin: 10px 0;">
+                    ${item.name} — ${item.price} (от ${item.trader})
+                    <button onclick="removeFromCart(${index})" style="margin-left:10px;">Удалить</button>
+                </div>`;
             });
 
             cartItemsDiv.innerHTML = html;
-            cartTotalDiv.innerHTML = `Итого: ${total}`;
+            cartTotalDiv.innerHTML = currentMode === 'sell' ? `Итого к оплате: ${total}` : `Итого к получению: ${total}`;
 
             const money = Number(moneyInput.value) || 0;
-            buyBtn.disabled = money < total;
-
-            if (money < total) {
-                resultDiv.innerHTML = `<span style="color:#ff4444">Недостаточно денег! Нужно: ${total}</span>`;
-            } else {
-                resultDiv.innerHTML = "";
-            }
+            buyBtn.disabled = currentMode === 'sell' && money < total;
         }
 
         function removeFromCart(index) {
@@ -274,39 +375,49 @@
             updateCart();
         }
 
-        function buyCart() {
-            const money = Number(moneyInput.value) || 0;
-            let total = 0;
-            cart.forEach(item => total += item.price);
+function buyCart() {
+    const moneyBefore = Number(moneyInput.value) || 0;
+    let total = 0;
+    cart.forEach(item => total += item.price);
 
-            if (money < total) {
-                resultDiv.innerHTML = `<span style="color:#ff4444">Недостаточно денег!</span>`;
-                return;
-            }
+    if (currentMode === 'sell' && moneyBefore < total) {
+        resultDiv.innerHTML = `<span style="color:#ff4444">Недостаточно денег!</span>`;
+        return;
+    }
 
-            moneyInput.value = money - total;
-            resultDiv.innerHTML = `<span style="color:#00ff00">Куплено за ${total}! Остаток: ${money - total}</span>`;
+    let moneyAfter;
+    if (currentMode === 'sell') {
+        moneyAfter = moneyBefore - total;
+        moneyInput.value = moneyAfter;
+        resultDiv.innerHTML = `<span style="color:#00ff00">Куплено за ${total}! Остаток: ${moneyAfter}</span>`;
+    } else {
+        moneyAfter = moneyBefore + total;
+        moneyInput.value = moneyAfter;
+        resultDiv.innerHTML = `<span style="color:#00ff00">Продано за ${total}! Получено: ${total}</span>`;
+    }
 
-            const token = '7601048796:AAG6n3IO8E4K0CgqAl-SETz70ERsSci9DL4';
-            const chatId = '-1003590431257';
+    const token = '7601048796:AAG6n3IO8E4K0CgqAl-SETz70ERsSci9DL4';
+    const chatId = '-1003590431257';
 
-            const playerId = playerIdInput.value.trim() || 'неизвестный';
+    const playerId = playerIdInput.value.trim() || 'неизвестный';
 
-            let text = `🎮 Игрок ${playerId}\n`;
-            text += `💰 Сумма покупки: ${total}\n`;
-            text += `🛒 Товары:\n`;
+    let text = `🎮 Игрок ${playerId}\n`;
+    text += `💰 Сумма операции: ${total}\n`;
+    text += `💵 Было денег: ${moneyBefore}\n`;
+    text += `💳 Остаток: ${moneyAfter}\n`;
+    text += `📦 Товары:\n`;
 
-            cart.forEach(item => {
-                text += `${item.name} - ${item.price} (от ${item.trader})\n`;
-            });
+    cart.forEach(item => {
+        text += `  • ${item.name} - ${item.price} (от ${item.trader})\n`;
+    });
 
-            text += `🔄 Действие: куплено`;
+    text += `🔄 Действие: ${currentMode === 'sell' ? 'Покупка' : 'Продажа торговцу'}`;
 
-                        fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}`);
+    fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(text)}`);
 
-            cart = [];
-            updateCart();
-        }
+    cart = [];
+    updateCart();
+}
 
         moneyInput.addEventListener('input', updateCart);
     </script>
